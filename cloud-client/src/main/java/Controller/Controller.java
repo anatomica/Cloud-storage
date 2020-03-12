@@ -1,6 +1,6 @@
 package Controller;
 
-import Json.*;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -8,12 +8,15 @@ import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ResourceBundle;
 
 public class Controller implements Initializable {
+
+    private FileService fileService;
 
     @FXML
     public MenuItem closeButton;
@@ -28,7 +31,22 @@ public class Controller implements Initializable {
     @FXML
     public Button sendButton;
 
-    private FileService fileService;
+    @FXML
+    public TextField tfFileName;
+
+    @FXML
+    public ListView<String> filesListOnClient;
+    @FXML
+    public ListView<String> filesListOnServer;
+
+    @FXML
+    public Button receiveButtonFromServer;
+    @FXML
+    public Button sendButtonFromClient;
+    @FXML
+    public Button receiveButtonFromClient;
+    @FXML
+    public Button sendButtonFromServer;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -36,6 +54,27 @@ public class Controller implements Initializable {
             this.fileService = new FileService(this);
         } catch (Exception e) {
             showError(e);
+        }
+    }
+
+    public void refreshFilesList() {
+        updateUI(() -> {
+            try {
+                filesListOnClient.getItems().clear();
+                filesListOnServer.getItems().clear();
+                Files.list(Paths.get("client_storage")).map(p -> p.getFileName().toString()).forEach(o -> filesListOnClient.getItems().add(o));
+                Files.list(Paths.get("server_storage")).map(p -> p.getFileName().toString()).forEach(o -> filesListOnServer.getItems().add(o));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    public static void updateUI(Runnable r) {
+        if (Platform.isFxApplicationThread()) {
+            r.run();
+        } else {
+            Platform.runLater(r);
         }
     }
 
@@ -62,8 +101,23 @@ public class Controller implements Initializable {
             e.printStackTrace();
         }
     }
+    
+    public void receiveFromServerButtonAction(ActionEvent actionEvent) {
+        if (tfFileName.getLength() > 0) {
+            fileService.sendFile();
+            tfFileName.clear();
+        }
+    }
 
-    public void sendButtonAction(ActionEvent actionEvent) {
-        fileService.sendFile(new File("Answers.txt"));
+    public void sendFromClientButtonAction(ActionEvent actionEvent) {
+
+    }
+
+    public void receiveFromClientButtonAction(ActionEvent actionEvent) {
+
+    }
+
+    public void sendFromServerButtonAction(ActionEvent actionEvent) {
+
     }
 }

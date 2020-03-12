@@ -11,7 +11,6 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0"
             xmlns="http://javafx.com/javafx/8.0.221" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.Controller">
    <top>
@@ -38,13 +37,14 @@
    <left>
       <VBox prefHeight="375.0" prefWidth="295.0" BorderPane.alignment="CENTER">
          <children>
-            <TextField />
-            <ListView prefHeight="310.0" prefWidth="270.0" />
+            <TextField alignment="CENTER" editable="false" text="Files on Client" />
+            <TextField fx:id="tfFileName" focusTraversable="false" promptText="Укажите имя файла на сервере, который хотите скачать" HBox.hgrow="ALWAYS" />
+            <ListView fx:id="filesListOnClient" VBox.vgrow="ALWAYS" prefHeight="310.0" prefWidth="270.0" />
             <HBox>
                <children>
                   <Button mnemonicParsing="false" prefHeight="25.0" prefWidth="100.0" text="Not" />
-                  <Button mnemonicParsing="false" prefHeight="25.0" prefWidth="100.0" text="Not" />
-                  <Button fx:id="sendButton" mnemonicParsing="false" onAction="#sendButtonAction" prefHeight="25.0" prefWidth="100.0" text="Send File" />
+                  <Button fx:id="receiveButtonFromServer" mnemonicParsing="false" onAction="#receiveFromServerButtonAction" prefHeight="25.0" prefWidth="100.0" text="Receive" />
+                  <Button fx:id="sendButtonFromClient" mnemonicParsing="false" onAction="#sendFromClientButtonAction" prefHeight="25.0" prefWidth="100.0" text="Send File" />
                </children>
             </HBox>
          </children>
@@ -53,8 +53,16 @@
    <right>
       <VBox prefHeight="375.0" prefWidth="295.0" BorderPane.alignment="CENTER">
          <children>
+            <TextField alignment="CENTER" editable="false" text="Files on Server" />
             <TextField />
-            <ListView prefHeight="310.0" prefWidth="300.0" />
+            <ListView fx:id="filesListOnServer" VBox.vgrow="ALWAYS" prefHeight="310.0" prefWidth="300.0" />
+            <HBox>
+               <children>
+                  <Button mnemonicParsing="false" prefHeight="25.0" prefWidth="100.0" text="Not" />
+                  <Button fx:id="receiveButtonFromClient" mnemonicParsing="false" onAction="#receiveFromClientButtonAction" prefHeight="25.0" prefWidth="100.0" text="Receive" />
+                  <Button fx:id="sendButtonFromServer" mnemonicParsing="false" onAction="#sendFromServerButtonAction" prefHeight="25.0" prefWidth="100.0" text="Send File" />
+               </children>
+            </HBox>
          </children>
       </VBox>
    </right>

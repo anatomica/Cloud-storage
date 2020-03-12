@@ -1,6 +1,6 @@
 package Controller;
 
-import Json.*;
+import File.*;
 import java.io.*;
 import java.util.Properties;
 
@@ -22,6 +22,7 @@ class FileService {
     private void initialize() {
         readProperties();
         startConnectionToServer();
+        controller.refreshFilesList();
     }
 
     private void readProperties() {
@@ -39,27 +40,14 @@ class FileService {
 
     private void startConnectionToServer() {
         try {
-            this.network = new Network(hostAddress, hostPort, this);
+            this.network = new Network(hostAddress, hostPort, controller,this);
         } catch (IOException e) {
             throw new ServerConnectionException("Failed to connect to server", e);
         }
     }
 
-    void sendFile(File file) {
-        Message msg = buildMessage(file);
-        network.send(msg.toJson());
-        network.send(file);
-    }
-
-    private Message buildMessage(File file) {
-        SendFile msg = new SendFile();
-        msg.nameFile = file.getName();
-        msg.pathFile = file.getPath();
-        msg.sizeFile = file.length();
-        return Message.sendFile(msg);
-    }
-
-    void processRetrievedFile(String message) throws IOException {
+    void sendFile() {
+        network.sendMsg(new FileRequest(controller.tfFileName.getText()));
     }
 
     void close() throws IOException {
