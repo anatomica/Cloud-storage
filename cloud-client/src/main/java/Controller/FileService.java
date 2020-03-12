@@ -2,7 +2,9 @@ package Controller;
 
 import File.*;
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -55,6 +57,11 @@ class FileService {
     void sendFile(Path path) throws IOException, InterruptedException {
         network.sendMsg(new FileMessage(path));
         TimeUnit.SECONDS.sleep(1);
+        controller.refreshFilesList();
+    }
+
+    public void deleteFile(String filename, String storage) throws IOException {
+        Files.delete(Paths.get(storage + filename).toAbsolutePath());
         controller.refreshFilesList();
     }
 
