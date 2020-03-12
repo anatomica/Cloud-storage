@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 class FileService {
@@ -18,12 +19,12 @@ class FileService {
     private Controller controller;
     private Network network;
 
-    FileService(Controller controller) throws IOException {
+    FileService(Controller controller) throws IOException, InterruptedException {
         this.controller = controller;
         initialize();
     }
 
-    private void initialize() {
+    private void initialize() throws InterruptedException {
         readProperties();
         startConnectionToServer();
         controller.refreshFilesList();
@@ -42,20 +43,35 @@ class FileService {
         }
     }
 
-    private void startConnectionToServer() {
-        try {
-            this.network = new Network(hostAddress, hostPort, controller,this);
-        } catch (IOException e) {
-            throw new ServerConnectionException("Failed to connect to server", e);
-        }
+    private void startConnectionToServer() throws InterruptedException {
+        CountDownLatch networkStarter = new CountDownLatch(1);
+        new Thread(() -> Network.getInstance().start(networkStarter)).start();
+        networkStarter.await();
+
+//        try {
+//            this.network = new Network(hostAddress, hostPort, controller,this);
+//        } catch (IOException e) {
+//            throw new ServerConnectionException("Failed to connect to server", e);
+//        }
     }
 
     void receiveFile(String filename) {
-        network.sendMsg(new FileRequest(filename));
+        // network.sendMsg(new FileRequest(filename));
     }
 
     void sendFile(Path path) throws IOException, InterruptedException {
-        network.sendMsg(new FileMessage(path));
+        ProtocolFileSender.sendFile(Paths.get("client_storage/" + path.getFileName()), Network.getInstance().getCurrentChannel(), future -> {
+            if (!future.isSuccess()) {
+                future.cause().printStackTrace();
+                Network.getInstance().stop();
+            }
+            if (future.isSuccess()) {
+                System.out.println("Файл успешно передан");
+                Network.getInstance().stop();
+            }
+        });
+
+        // network.sendMsg(new FileMessage(path));
         TimeUnit.SECONDS.sleep(1);
         controller.refreshFilesList();
     }
@@ -66,7 +82,7 @@ class FileService {
     }
 
     void close() throws IOException {
-        network.close();
+        network.stop();
         System.exit(0);
     }
 }

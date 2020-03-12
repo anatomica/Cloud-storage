@@ -1,110 +1,61 @@
 package Controller;
 
-import File.*;
-import io.netty.handler.codec.serialization.ObjectDecoderInputStream;
-import io.netty.handler.codec.serialization.ObjectEncoderOutputStream;
-import java.io.*;
-import java.net.Socket;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
+import java.net.InetSocketAddress;
+import java.util.concurrent.CountDownLatch;
 
-public class Network implements Closeable {
+public class Network {
 
-    private final String serverAddress;
-    private final int port;
-    private Controller controller;
-    private FileService fileService;
+    private static Network ourInstance = new Network();
 
-    private Socket socket;
-    private ObjectDecoderInputStream inputStream;
-    private ObjectEncoderOutputStream outputStream;
-
-    Network(String serverAddress, int port, Controller controller, FileService fileService) throws IOException {
-        this.serverAddress = serverAddress;
-        this.port = port;
-        this.controller = controller;
-        this.fileService = fileService;
-        initNetworkState(serverAddress, port);
+    public static Network getInstance() {
+        return ourInstance;
     }
 
-    private void initNetworkState(String serverAddress, int port) throws IOException {
-        this.socket = new Socket(serverAddress, port);
-        this.inputStream = new ObjectDecoderInputStream(socket.getInputStream(), 50 * 1024 * 1024);
-        this.outputStream = new ObjectEncoderOutputStream(socket.getOutputStream());
-
-        Thread readServerThread = new Thread(this::readObjectFromServer);
-        readServerThread.setDaemon(true);
-        readServerThread.start();
+    private Network() {
     }
 
-    private void readObjectFromServer() {
-        while (true) {
-            try {
-                Object obj = inputStream.readObject();
-                if (obj instanceof FileMessage) {
-                    FileMessage fm = (FileMessage) obj;
-                    Files.write(Paths.get("client_storage/" + fm.getFilename()), fm.getData(), StandardOpenOption.CREATE);
-                    controller.refreshFilesList();
+    private Channel currentChannel;
+
+    public Channel getCurrentChannel() {
+        return currentChannel;
+    }
+
+    public void start(CountDownLatch countDownLatch) {
+        EventLoopGroup group = new NioEventLoopGroup();
+        try {
+            Bootstrap clientBootstrap = new Bootstrap();
+            clientBootstrap.group(group);
+            clientBootstrap.channel(NioSocketChannel.class);
+            clientBootstrap.remoteAddress(new InetSocketAddress("localhost", 8190));
+            clientBootstrap.handler(new ChannelInitializer<SocketChannel>() {
+                protected void initChannel(SocketChannel socketChannel) throws Exception {
+                    socketChannel.pipeline().addLast();
+                    currentChannel = socketChannel;
                 }
-            } catch (Exception e) {
-                System.out.println("Соединение с сервером было разорвано!");
-                break;
+            });
+            ChannelFuture channelFuture = clientBootstrap.connect().sync();
+            countDownLatch.countDown();
+            channelFuture.channel().closeFuture().sync();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                group.shutdownGracefully().sync();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
     }
 
-    public void sendMsg(AbstractMessage msg) {
-        try {
-            outputStream.writeObject(msg);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-//    private void readMessagesFromServer() {
-//        while (true) {
-//            try {
-//                String message = inputStream.readUTF();
-//                Platform.runLater(() -> {
-//                    try {
-//                        fileService.processRetrievedFile(message);
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
-//                });
-//            } catch (Exception e) {
-//                System.out.println("Соединение с сервером было разорвано!");
-//                break;
-//            }
-//        }
-//    }
-//
-//    void send (String message) {
-//        try {
-//            if (outputStream == null) {
-//                initNetworkState(serverAddress, port);
-//            }
-//            outputStream.writeUTF(message);
-//        } catch (IOException e) {
-//            throw new RuntimeException("Failed to send message: " + message);
-//        }
-//    }
-//
-//    void send (File file) {
-//        try {
-//            if (outputStream == null) {
-//                initNetworkState(serverAddress, port);
-//            }
-//            outputStream.writeInt(Files.readAllBytes(file.toPath()).length);
-//            outputStream.write(Files.readAllBytes(file.toPath()));
-//        } catch (IOException e) {
-//            throw new RuntimeException("Failed to send message: " + file.getName());
-//        }
-//    }
-
-    @Override
-    public void close() throws IOException {
-        socket.close();
+    public void stop() {
+        currentChannel.close();
     }
 }
