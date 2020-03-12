@@ -5,6 +5,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 
 public class MainHandler extends ChannelInboundHandlerAdapter {
     @Override
@@ -15,6 +16,10 @@ public class MainHandler extends ChannelInboundHandlerAdapter {
                 FileMessage fm = new FileMessage(Paths.get("server_storage/" + fr.getFilename()));
                 ctx.writeAndFlush(fm);
             }
+        }
+        if (msg instanceof FileMessage) {
+            FileMessage fm = (FileMessage) msg;
+            Files.write(Paths.get("server_storage/" + fm.getFilename()), fm.getData(), StandardOpenOption.CREATE);
         }
     }
 

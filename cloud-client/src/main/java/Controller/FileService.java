@@ -2,7 +2,9 @@ package Controller;
 
 import File.*;
 import java.io.*;
+import java.nio.file.Path;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 class FileService {
 
@@ -46,8 +48,14 @@ class FileService {
         }
     }
 
-    void sendFile() {
-        network.sendMsg(new FileRequest(controller.tfFileName.getText()));
+    void receiveFile(String filename) {
+        network.sendMsg(new FileRequest(filename));
+    }
+
+    void sendFile(Path path) throws IOException, InterruptedException {
+        network.sendMsg(new FileMessage(path));
+        TimeUnit.SECONDS.sleep(1);
+        controller.refreshFilesList();
     }
 
     void close() throws IOException {

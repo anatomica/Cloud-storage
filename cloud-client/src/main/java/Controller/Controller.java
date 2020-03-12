@@ -33,6 +33,7 @@ public class Controller implements Initializable {
 
     @FXML
     public TextField tfFileName;
+    public String filename;
 
     @FXML
     public ListView<String> filesListOnClient;
@@ -103,14 +104,13 @@ public class Controller implements Initializable {
     }
     
     public void receiveFromServerButtonAction(ActionEvent actionEvent) {
-        if (tfFileName.getLength() > 0) {
-            fileService.sendFile();
-            tfFileName.clear();
-        }
+        filename = filesListOnServer.getSelectionModel().getSelectedItem();
+        if (filename != null && !filename.equals("")) fileService.receiveFile(filename);
     }
 
-    public void sendFromClientButtonAction(ActionEvent actionEvent) {
-
+    public void sendFromClientButtonAction(ActionEvent actionEvent) throws IOException, InterruptedException {
+        filename = filesListOnClient.getSelectionModel().getSelectedItem();
+        if (filename != null && !filename.equals("")) fileService.sendFile(Paths.get("client_storage/" + filename));
     }
 
     public void receiveFromClientButtonAction(ActionEvent actionEvent) {
