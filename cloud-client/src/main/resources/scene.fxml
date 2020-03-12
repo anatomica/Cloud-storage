@@ -42,12 +42,12 @@
                </font></TextField>
             <HBox prefHeight="16.0" prefWidth="295.0">
                <children>
-                  <TextField alignment="CENTER" editable="false" focusTraversable="false" prefHeight="28.0" prefWidth="222.0" style="-fx-background-color: light-gray;" text="Имя файла">
+                  <TextField alignment="CENTER" editable="false" focusTraversable="false" prefHeight="28.0" prefWidth="222.0" style="-fx-background-color: #f8f8ff" text="Имя файла">
                      <font>
                         <Font name="System Bold" size="11.0" />
                      </font>
                   </TextField>
-                  <TextField alignment="CENTER" editable="false" focusTraversable="false" prefHeight="28.0" prefWidth="170.0" style="-fx-background-color: light-gray;" text="Размер">
+                  <TextField alignment="CENTER" editable="false" focusTraversable="false" prefHeight="28.0" prefWidth="170.0" style="-fx-background-color: #f8f8ff" text="Размер">
                      <font>
                         <Font name="System Bold" size="11.0" />
                      </font>
@@ -72,12 +72,12 @@
                </font></TextField>
             <HBox prefHeight="16.0" prefWidth="295.0">
                <children>
-                  <TextField alignment="CENTER" editable="false" focusTraversable="false" prefHeight="28.0" prefWidth="222.0" style="-fx-background-color: light-gray;" text="Имя файла">
+                  <TextField alignment="CENTER" editable="false" focusTraversable="false" prefHeight="28.0" prefWidth="222.0" style="-fx-background-color: #f8f8ff" text="Имя файла">
                      <font>
                         <Font name="System Bold" size="11.0" />
                      </font>
                   </TextField>
-                  <TextField alignment="CENTER" editable="false" focusTraversable="false" prefHeight="28.0" prefWidth="170.0" style="-fx-background-color: light-gray;" text="Размер">
+                  <TextField alignment="CENTER" editable="false" focusTraversable="false" prefHeight="28.0" prefWidth="170.0" style="-fx-background-color: #f8f8ff" text="Размер">
                      <font>
                         <Font name="System Bold" size="11.0" />
                      </font>
