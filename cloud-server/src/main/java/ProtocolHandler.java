@@ -1,5 +1,6 @@
 import Protocol.*;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import java.io.BufferedOutputStream;
@@ -8,17 +9,19 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class ProtocolHandler extends ChannelInboundHandlerAdapter {
+
     public enum State {
         IDLE,
         NAME_LENGTH,
         NAME,
         FILE_LENGTH,
         FILE_RECEIVE,
-        FILE_SEND
+        FILE_SEND,
+        END
     }
 
     private State currentState = State.IDLE;
-    private int sendFile = 0;
+    private int sendFileFromServer = 0;
     private int nextLength;
     private long fileLength;
     private long receivedFileLength;
@@ -30,8 +33,13 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
         while (buf.readableBytes() > 0) {
             if (currentState == State.IDLE) {
                 byte readed = buf.readByte();
+                if (readed == (byte) 5) {
+                    currentState = State.END;
+                    receivedFileLength = 0L;
+                    System.out.println("STATE: End of receiving file");
+                }
                 if (readed == (byte) 15) {
-                    sendFile = 1;
+                    sendFileFromServer = 1;
                     currentState = State.NAME_LENGTH;
                     receivedFileLength = 0L;
                     System.out.println("STATE: Start file sending");
@@ -40,7 +48,7 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
                     currentState = State.NAME_LENGTH;
                     receivedFileLength = 0L;
                     System.out.println("STATE: Start file receiving");
-                } else {
+                } else if (readed != (byte) 5 && readed != (byte) 15) {
                     System.out.println("ERROR: Invalid first byte - " + readed);
                 }
             }
@@ -55,14 +63,14 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
 
             if (currentState == State.NAME) {
                 if (buf.readableBytes() >= nextLength) {
-                    if (sendFile == 0) {
+                    if (sendFileFromServer == 0) {
                         byte[] fileName = new byte[nextLength];
                         buf.readBytes(fileName);
                         System.out.println("STATE: Filename received - " + new String(fileName, "UTF-8"));
                         out = new BufferedOutputStream(new FileOutputStream("server_storage/" + new String(fileName)));
                         currentState = State.FILE_LENGTH;
                     }
-                    if (sendFile == 1) currentState = State.FILE_SEND;
+                    if (sendFileFromServer == 1) currentState = State.FILE_SEND;
                 }
             }
 
@@ -75,7 +83,7 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
             }
 
             if (currentState == State.FILE_SEND) {
-                sendFile = 0;
+                sendFileFromServer = 0;
                 byte[] fileName = new byte[nextLength];
                 buf.readBytes(fileName);
                 System.out.println("STATE: Filename what will be send - " + new String(fileName, "UTF-8"));
@@ -87,6 +95,9 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
                         }
                         if (future.isSuccess()) {
                             System.out.println("Файл успешно передан");
+                            ByteBuf end = ByteBufAllocator.DEFAULT.directBuffer(1);
+                            end.writeByte((byte) 5);
+                            ctx.channel().writeAndFlush(end);
                         }
                     });
                 }
@@ -104,6 +115,12 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
                         break;
                     }
                 }
+            }
+
+            if (currentState == State.END) {
+                // TODO refreshFilesList
+                currentState = State.IDLE;
+                break;
             }
         }
         if (buf.readableBytes() == 0) {

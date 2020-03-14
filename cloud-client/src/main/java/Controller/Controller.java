@@ -106,12 +106,12 @@ public class Controller implements Initializable {
         }
     }
 
-    public void sendFromClientButtonAction(ActionEvent actionEvent) throws IOException, InterruptedException {
+    public void sendFromClientButtonAction(ActionEvent actionEvent) throws IOException {
         filename = filesListOnClient.getSelectionModel().getSelectedItem();
         if (filename != null && !filename.equals("")) fileService.sendFile(Paths.get("client_storage/" + filename));
     }
 
-    public void sendFromServerButtonAction(ActionEvent actionEvent) throws IOException, InterruptedException {
+    public void sendFromServerButtonAction(ActionEvent actionEvent) throws IOException {
         filename = filesListOnServer.getSelectionModel().getSelectedItem();
         if (filename != null && !filename.equals("")) fileService.receiveFile(filename);
     }

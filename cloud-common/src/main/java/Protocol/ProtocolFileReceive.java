@@ -9,7 +9,7 @@ import java.nio.file.Path;
 
 public class ProtocolFileReceive {
 
-    public static void receiveFile(Path path, Channel channel) throws IOException {
+    public static void receiveFile(Path path, Channel channel, ChannelFutureListener finishListener) throws IOException {
 
         ByteBuf buf = null;
         buf = ByteBufAllocator.DEFAULT.directBuffer(1);
@@ -23,6 +23,10 @@ public class ProtocolFileReceive {
         byte[] filenameBytes = path.getFileName().toString().getBytes(StandardCharsets.UTF_8);
         buf = ByteBufAllocator.DEFAULT.directBuffer(filenameBytes.length);
         buf.writeBytes(filenameBytes);
-        channel.writeAndFlush(buf);
+        ChannelFuture transferOperationFuture = channel.writeAndFlush(buf);
+
+        if (finishListener != null) {
+            transferOperationFuture.addListener(finishListener);
+        }
     }
 }
