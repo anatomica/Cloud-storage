@@ -1,4 +1,3 @@
-import handlers.*;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -21,7 +20,7 @@ class MyServer {
                         @Override
                         public void initChannel(SocketChannel ch) throws Exception {
                             System.out.println("Подключился новый клиент!");
-                            ch.pipeline().addLast(new StringToByteBufHandler(), new ProtocolHandler());
+                            ch.pipeline().addLast(new ProtocolHandler());
                         }
                     })
                     .childOption(ChannelOption.SO_KEEPALIVE, true);

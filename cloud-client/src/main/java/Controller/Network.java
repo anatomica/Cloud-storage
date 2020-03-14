@@ -37,7 +37,7 @@ public class Network {
             clientBootstrap.remoteAddress(new InetSocketAddress("localhost", 8190));
             clientBootstrap.handler(new ChannelInitializer<SocketChannel>() {
                 protected void initChannel(SocketChannel socketChannel) throws Exception {
-                    socketChannel.pipeline().addLast();
+                    socketChannel.pipeline().addLast(new ProtocolHandler());
                     currentChannel = socketChannel;
                 }
             });

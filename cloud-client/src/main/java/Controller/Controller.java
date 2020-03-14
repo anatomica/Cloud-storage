@@ -1,7 +1,6 @@
 package Controller;
 
 import javafx.application.Platform;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -9,16 +8,13 @@ import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.Format;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
 
 public class Controller implements Initializable {
 
@@ -115,7 +111,7 @@ public class Controller implements Initializable {
         if (filename != null && !filename.equals("")) fileService.sendFile(Paths.get("client_storage/" + filename));
     }
 
-    public void sendFromServerButtonAction(ActionEvent actionEvent) {
+    public void sendFromServerButtonAction(ActionEvent actionEvent) throws IOException, InterruptedException {
         filename = filesListOnServer.getSelectionModel().getSelectedItem();
         if (filename != null && !filename.equals("")) fileService.receiveFile(filename);
     }

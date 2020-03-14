@@ -1,10 +1,11 @@
-package handlers;
-
+import Protocol.*;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class ProtocolHandler extends ChannelInboundHandlerAdapter {
     public enum State {
@@ -12,10 +13,12 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
         NAME_LENGTH,
         NAME,
         FILE_LENGTH,
-        FILE
+        FILE_RECEIVE,
+        FILE_SEND
     }
 
     private State currentState = State.IDLE;
+    private int sendFile = 0;
     private int nextLength;
     private long fileLength;
     private long receivedFileLength;
@@ -27,6 +30,12 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
         while (buf.readableBytes() > 0) {
             if (currentState == State.IDLE) {
                 byte readed = buf.readByte();
+                if (readed == (byte) 15) {
+                    sendFile = 1;
+                    currentState = State.NAME_LENGTH;
+                    receivedFileLength = 0L;
+                    System.out.println("STATE: Start file sending");
+                }
                 if (readed == (byte) 25) {
                     currentState = State.NAME_LENGTH;
                     receivedFileLength = 0L;
@@ -46,11 +55,14 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
 
             if (currentState == State.NAME) {
                 if (buf.readableBytes() >= nextLength) {
-                    byte[] fileName = new byte[nextLength];
-                    buf.readBytes(fileName);
-                    System.out.println("STATE: Filename received - " + new String(fileName, "UTF-8"));
-                    out = new BufferedOutputStream(new FileOutputStream("server_storage/" + new String(fileName)));
-                    currentState = State.FILE_LENGTH;
+                    if (sendFile == 0) {
+                        byte[] fileName = new byte[nextLength];
+                        buf.readBytes(fileName);
+                        System.out.println("STATE: Filename received - " + new String(fileName, "UTF-8"));
+                        out = new BufferedOutputStream(new FileOutputStream("server_storage/" + new String(fileName)));
+                        currentState = State.FILE_LENGTH;
+                    }
+                    if (sendFile == 1) currentState = State.FILE_SEND;
                 }
             }
 
@@ -58,11 +70,30 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
                 if (buf.readableBytes() >= 8) {
                     fileLength = buf.readLong();
                     System.out.println("STATE: File length received - " + fileLength);
-                    currentState = State.FILE;
+                    currentState = State.FILE_RECEIVE;
                 }
             }
 
-            if (currentState == State.FILE) {
+            if (currentState == State.FILE_SEND) {
+                sendFile = 0;
+                byte[] fileName = new byte[nextLength];
+                buf.readBytes(fileName);
+                System.out.println("STATE: Filename what will be send - " + new String(fileName, "UTF-8"));
+                if (Files.exists(Paths.get("server_storage/" + new String(fileName)))) {
+                    ProtocolFileSender.sendFile(Paths.get("server_storage/" + new String(fileName)), ctx.channel(), future -> {
+                        currentState = State.IDLE;
+                        if (!future.isSuccess()) {
+                            future.cause().printStackTrace();
+                        }
+                        if (future.isSuccess()) {
+                            System.out.println("Файл успешно передан");
+                        }
+                    });
+                }
+                break;
+            }
+
+            if (currentState == State.FILE_RECEIVE) {
                 while (buf.readableBytes() > 0) {
                     out.write(buf.readByte());
                     receivedFileLength++;

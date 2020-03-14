@@ -1,6 +1,6 @@
 package Controller;
 
-import File.*;
+import Protocol.*;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -55,23 +55,21 @@ class FileService {
 //        }
     }
 
-    void receiveFile(String filename) {
-        // network.sendMsg(new FileRequest(filename));
+    void receiveFile(String filename) throws IOException, InterruptedException {
+        ProtocolFileReceive.receiveFile(Paths.get(filename), Network.getInstance().getCurrentChannel());
+        TimeUnit.SECONDS.sleep(1);
+        controller.refreshFilesList();
     }
 
     void sendFile(Path path) throws IOException, InterruptedException {
         ProtocolFileSender.sendFile(Paths.get("client_storage/" + path.getFileName()), Network.getInstance().getCurrentChannel(), future -> {
             if (!future.isSuccess()) {
                 future.cause().printStackTrace();
-                Network.getInstance().stop();
             }
             if (future.isSuccess()) {
                 System.out.println("Файл успешно передан");
-                Network.getInstance().stop();
             }
         });
-
-        // network.sendMsg(new FileMessage(path));
         TimeUnit.SECONDS.sleep(1);
         controller.refreshFilesList();
     }
@@ -82,6 +80,7 @@ class FileService {
     }
 
     void close() throws IOException {
+        network.getCurrentChannel().close();
         network.stop();
         System.exit(0);
     }
