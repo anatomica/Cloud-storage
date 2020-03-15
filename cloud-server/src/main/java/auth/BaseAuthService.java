@@ -1,4 +1,13 @@
 package auth;
+
+import Json.*;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+
+import java.io.IOException;
 import java.sql.*;
 
 public class BaseAuthService implements AuthService {
@@ -6,8 +15,23 @@ public class BaseAuthService implements AuthService {
     private static Connection conn;
     private static Statement stmt;
 
-    @Override
-    public String getNickByLoginPass(String login, String pass) throws SQLException {
+    public static boolean authentication(String clientMessage, Channel channel) throws IOException, SQLException {
+        Message message = Message.fromJson(clientMessage);
+        if (message.command == Command.AUTH_MESSAGE) {
+            AuthMessage authMessage = message.authMessage;
+            String login = authMessage.login;
+            String password = authMessage.password;
+            String nick = getNickByLoginPass(login, password);
+            disconect();
+            if (nick == null) return false;
+            ByteBuf auth = ByteBufAllocator.DEFAULT.directBuffer(1);
+            auth.writeByte((byte) 3);
+            channel.writeAndFlush(auth);
+        }
+        return true;
+    }
+
+    public static String getNickByLoginPass(String login, String pass) throws SQLException {
 
         try {
             connection();

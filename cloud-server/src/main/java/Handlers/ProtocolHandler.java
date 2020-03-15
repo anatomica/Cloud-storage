@@ -1,6 +1,7 @@
-package Controller;
+package Handlers;
 
 import Protocol.*;
+import auth.BaseAuthService;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
@@ -19,11 +20,13 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
         FILE_LENGTH,
         FILE_RECEIVE,
         FILE_SEND,
+        AUTH,
         END
     }
 
     private State currentState = State.IDLE;
     private int sendFileFromServer = 0;
+    private int receiveAuth = 0;
     private int nextLength;
     private long fileLength;
     private long receivedFileLength;
@@ -40,6 +43,12 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
                     receivedFileLength = 0L;
                     System.out.println("STATE: End of receiving file");
                 }
+                if (readed == (byte) 10) {
+                    receiveAuth = 1;
+                    currentState = State.NAME_LENGTH;
+                    receivedFileLength = 0L;
+                    System.out.println("STATE: Authentication is started!");
+                }
                 if (readed == (byte) 15) {
                     sendFileFromServer = 1;
                     currentState = State.NAME_LENGTH;
@@ -50,7 +59,7 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
                     currentState = State.NAME_LENGTH;
                     receivedFileLength = 0L;
                     System.out.println("STATE: Start file receiving");
-                } else if (readed != (byte) 5 && readed != (byte) 15) {
+                } else if (readed != (byte) 5 && readed != (byte) 10 && readed != (byte) 15) {
                     System.out.println("ERROR: Invalid first byte - " + readed);
                 }
             }
@@ -65,14 +74,15 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
 
             if (currentState == State.NAME) {
                 if (buf.readableBytes() >= nextLength) {
-                    if (sendFileFromServer == 0) {
+                    if (receiveAuth == 1) currentState = State.AUTH;
+                    if (sendFileFromServer == 1) currentState = State.FILE_SEND;
+                    if (sendFileFromServer == 0 && receiveAuth == 0) {
                         byte[] fileName = new byte[nextLength];
                         buf.readBytes(fileName);
                         System.out.println("STATE: Filename received - " + new String(fileName, "UTF-8"));
-                        out = new BufferedOutputStream(new FileOutputStream("client_storage/" + new String(fileName)));
+                        out = new BufferedOutputStream(new FileOutputStream("server_storage/" + new String(fileName)));
                         currentState = State.FILE_LENGTH;
                     }
-                    if (sendFileFromServer == 1) currentState = State.FILE_SEND;
                 }
             }
 
@@ -96,7 +106,7 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
                             future.cause().printStackTrace();
                         }
                         if (future.isSuccess()) {
-                            System.out.println("Файл успешно передан");
+                            System.out.println("File send successful!");
                             ByteBuf end = ByteBufAllocator.DEFAULT.directBuffer(1);
                             end.writeByte((byte) 5);
                             ctx.channel().writeAndFlush(end);
@@ -112,15 +122,27 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
                     receivedFileLength++;
                     if (fileLength == receivedFileLength) {
                         currentState = State.IDLE;
-                        System.out.println("File received");
+                        System.out.println("File receive successful!");
                         out.close();
                         break;
                     }
                 }
             }
 
-            if (currentState == State.END) {
+            if (currentState == State.AUTH) {
+                receiveAuth = 0;
+                byte[] fileName = new byte[nextLength];
+                buf.readBytes(fileName);
+                System.out.println("STATE: Authentication received - " + new String(fileName, "UTF-8"));
+                if (BaseAuthService.authentication(new String(fileName, "UTF-8"), ctx.channel())) {
+                    System.out.println("Authentication is successful!");
+                } else System.out.println("Access denied!");
+                currentState = State.IDLE;
+                break;
+            }
 
+            if (currentState == State.END) {
+                // TODO refreshFilesList();
                 currentState = State.IDLE;
                 break;
             }

@@ -1,8 +1,10 @@
+package Handlers;
+
+import Controller.ScreenManager;
 import Protocol.*;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.*;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.nio.file.Files;
@@ -17,6 +19,7 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
         FILE_LENGTH,
         FILE_RECEIVE,
         FILE_SEND,
+        AUTHID,
         END
     }
 
@@ -33,6 +36,11 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
         while (buf.readableBytes() > 0) {
             if (currentState == State.IDLE) {
                 byte readed = buf.readByte();
+                if (readed == (byte) 3) {
+                    currentState = State.AUTHID;
+                    receivedFileLength = 0L;
+                    System.out.println("STATE: Verification is Successful!");
+                }
                 if (readed == (byte) 5) {
                     currentState = State.END;
                     receivedFileLength = 0L;
@@ -48,7 +56,7 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
                     currentState = State.NAME_LENGTH;
                     receivedFileLength = 0L;
                     System.out.println("STATE: Start file receiving");
-                } else if (readed != (byte) 5 && readed != (byte) 15) {
+                } else if (readed != (byte) 3 && readed != (byte) 5 && readed != (byte) 15) {
                     System.out.println("ERROR: Invalid first byte - " + readed);
                 }
             }
@@ -67,7 +75,7 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
                         byte[] fileName = new byte[nextLength];
                         buf.readBytes(fileName);
                         System.out.println("STATE: Filename received - " + new String(fileName, "UTF-8"));
-                        out = new BufferedOutputStream(new FileOutputStream("server_storage/" + new String(fileName)));
+                        out = new BufferedOutputStream(new FileOutputStream("client_storage/" + new String(fileName)));
                         currentState = State.FILE_LENGTH;
                     }
                     if (sendFileFromServer == 1) currentState = State.FILE_SEND;
@@ -94,7 +102,7 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
                             future.cause().printStackTrace();
                         }
                         if (future.isSuccess()) {
-                            System.out.println("Файл успешно передан");
+                            System.out.println("File send successful!");
                             ByteBuf end = ByteBufAllocator.DEFAULT.directBuffer(1);
                             end.writeByte((byte) 5);
                             ctx.channel().writeAndFlush(end);
@@ -110,15 +118,21 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
                     receivedFileLength++;
                     if (fileLength == receivedFileLength) {
                         currentState = State.IDLE;
-                        System.out.println("File received");
+                        System.out.println("File receive successful!");
                         out.close();
                         break;
                     }
                 }
             }
 
+            if (currentState == State.AUTHID) {
+                ScreenManager.showWorkFlowScreen();
+                currentState = State.IDLE;
+                break;
+            }
+
             if (currentState == State.END) {
-                // TODO refreshFilesList
+                // TODO refreshFilesList();
                 currentState = State.IDLE;
                 break;
             }

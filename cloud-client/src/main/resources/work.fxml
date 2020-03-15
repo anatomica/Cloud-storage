@@ -19,7 +19,7 @@
 
 <Pane xmlns="http://javafx.com/javafx/8.0.221" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.Controller">
    <children>
-      <VBox fx:id="imageBox" layoutX="200.0" layoutY="46.0" prefHeight="191.0" prefWidth="36.0">
+      <VBox fx:id="imageBox" layoutX="200.0" layoutY="46.0" prefHeight="191.0" prefWidth="36.0" visible="false">
          <children>
             <ImageView fitHeight="200.0" fitWidth="200.0">
                <image>
@@ -28,7 +28,7 @@
             </ImageView>
          </children>
       </VBox>
-      <HBox fx:id="authPanel" alignment="CENTER" layoutX="35.0" layoutY="271.0" prefHeight="64.0" prefWidth="530.0">
+      <HBox fx:id="authPanel" alignment="CENTER" layoutX="35.0" layoutY="271.0" prefHeight="64.0" prefWidth="530.0" visible="false">
          <children>
             <TextField fx:id="loginField" onAction="#sendAuth" prefHeight="25.0" prefWidth="187.0" promptText="Логин" HBox.hgrow="ALWAYS" />
             <PasswordField fx:id="passField" onAction="#sendAuth" prefHeight="25.0" prefWidth="171.0" promptText="Пароль" HBox.hgrow="ALWAYS">
@@ -43,7 +43,7 @@
             </Button>
          </children>
       </HBox>
-      <BorderPane fx:id="workPanel" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" visible="false">
+      <BorderPane fx:id="workPanel" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0">
          <top>
             <MenuBar prefHeight="16.0" prefWidth="600.0" BorderPane.alignment="CENTER">
               <menus>

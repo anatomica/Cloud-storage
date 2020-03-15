@@ -5,7 +5,7 @@ import java.util.List;
 
 public class Message {
 
-    // public AuthMessage authMessage;
+    public AuthMessage authMessage;
     public SendFile sendFile;
     public Command command;
 
@@ -25,12 +25,12 @@ public class Message {
         return m;
     }
 
-//    public static Message createAuth(AuthMessage msg) {
-//        Message m = create(Command.AUTH_MESSAGE);
-//        m.authMessage = msg;
-//        return m;
-//    }
-//
+    public static Message createAuth(AuthMessage msg) {
+        Message m = create(Command.AUTH_MESSAGE);
+        m.authMessage = msg;
+        return m;
+    }
+
 //    public static Message createRegister(RegisterMessage msg) {
 //        Message m = create(Command.REGISTER_MESSAGE);
 //        m.registerMessage = msg;

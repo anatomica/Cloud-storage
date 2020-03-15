@@ -1,5 +1,6 @@
 package Controller;
 
+import Handlers.ProtocolHandler;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -13,19 +14,18 @@ import java.util.concurrent.CountDownLatch;
 
 public class Network {
 
+    private Channel currentChannel;
     private static Network ourInstance = new Network();
 
     public static Network getInstance() {
         return ourInstance;
     }
 
-    private Network() {
-    }
-
-    private Channel currentChannel;
-
     public Channel getCurrentChannel() {
         return currentChannel;
+    }
+
+    public Network() {
     }
 
     public void start(CountDownLatch countDownLatch) {

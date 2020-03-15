@@ -18,7 +18,7 @@ class FileService {
 
     private Controller controller;
 
-    FileService(Controller controller) throws InterruptedException {
+    FileService(Controller controller) throws InterruptedException, IOException {
         this.controller = controller;
         initialize();
     }
@@ -55,7 +55,7 @@ class FileService {
             }
             if (future.isSuccess()) {
                 System.out.println("Команда на получение передана");
-                TimeUnit.MILLISECONDS.sleep(1000);
+                TimeUnit.MILLISECONDS.sleep(1500);
                 controller.refreshFilesList();
             }
         });

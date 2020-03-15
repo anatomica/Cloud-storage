@@ -1,10 +1,13 @@
 package Controller;
 
+import Json.*;
+import Protocol.ProtocolAuthSend;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -19,6 +22,7 @@ import java.util.ResourceBundle;
 public class Controller implements Initializable {
 
     private FileService fileService;
+    public String nickname;
     public String filename;
 
     @FXML
@@ -28,11 +32,11 @@ public class Controller implements Initializable {
     @FXML
     public PasswordField passField;
     @FXML
+    public VBox imageBox;
+    @FXML
     public HBox authPanel;
     @FXML
-    public VBox chatPanel;
-    @FXML
-    public Button sendButton;
+    public BorderPane workPanel;
 
     @FXML
     public ListView<String> filesListOnClient;
@@ -98,14 +102,6 @@ public class Controller implements Initializable {
         e.printStackTrace();
     }
 
-    public void shutdown() {
-        try {
-            fileService.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     public void sendFromClientButtonAction(ActionEvent actionEvent) throws IOException {
         filename = filesListOnClient.getSelectionModel().getSelectedItem();
         if (filename != null && !filename.equals("")) fileService.sendFile(Paths.get("client_storage/" + filename));
@@ -128,5 +124,24 @@ public class Controller implements Initializable {
 
     public void refreshOnAllButtonAction(ActionEvent actionEvent) {
         refreshFilesList();
+    }
+
+    public void sendAuth (ActionEvent actionEvent) throws IOException {
+        String login = loginField.getText();
+        String password = passField.getText();
+        nickname = login;
+        AuthMessage msg = new AuthMessage();
+        msg.login = login;
+        msg.password = password;
+        Message authMsg = Message.createAuth(msg);
+        ProtocolAuthSend.authSend(authMsg.toJson(), Network.getInstance().getCurrentChannel());
+    }
+
+    public void shutdown() {
+        try {
+            fileService.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
