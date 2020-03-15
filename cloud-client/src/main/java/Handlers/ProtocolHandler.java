@@ -132,6 +132,7 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
             }
 
             if (currentState == State.END) {
+                ScreenManager.showWorkFlowScreen();
                 // TODO refreshFilesList();
                 currentState = State.IDLE;
                 break;

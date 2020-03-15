@@ -55,8 +55,8 @@ class FileService {
             }
             if (future.isSuccess()) {
                 System.out.println("Команда на получение передана");
-                TimeUnit.MILLISECONDS.sleep(1500);
-                controller.refreshFilesList();
+                // TimeUnit.MILLISECONDS.sleep(1500);
+                // controller.refreshFilesList();
             }
         });
     }

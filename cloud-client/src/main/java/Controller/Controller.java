@@ -60,6 +60,12 @@ public class Controller implements Initializable {
     @FXML
     public Button refreshOnServer;
 
+    private static final Controller CONTROLLER = new Controller();
+
+    public static Controller getController() {
+        return CONTROLLER;
+    }
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         try {
