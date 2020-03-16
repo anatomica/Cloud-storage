@@ -22,7 +22,7 @@ import java.util.ResourceBundle;
 public class Controller implements Initializable {
 
     private FileService fileService;
-    public String nickname;
+    public static String pathToFileOfUser;
     public String filename;
 
     @FXML
@@ -82,10 +82,13 @@ public class Controller implements Initializable {
                 sizeListOnClient.getItems().clear();
                 filesListOnServer.getItems().clear();
                 sizeListOnServer.getItems().clear();
+                File directory = new File("server_storage/" + pathToFileOfUser);
+                if (!directory.exists()) directory.mkdir();
+                // Files.createDirectory(Paths.get("server_storage/" + nickname));
                 Files.list(Paths.get("client_storage")).map(p -> p.getFileName().toString()).forEach(o -> filesListOnClient.getItems().add(o));
                 Files.list(Paths.get("client_storage")).map(Path::toFile).map(File::length).forEach(o -> sizeListOnClient.getItems().add((o) + " bytes"));
-                Files.list(Paths.get("server_storage")).map(p -> p.getFileName().toString()).forEach(o -> filesListOnServer.getItems().add(o));
-                Files.list(Paths.get("server_storage")).map(Path::toFile).map(File::length).forEach(o -> sizeListOnServer.getItems().add((o) + " bytes"));
+                Files.list(Paths.get("server_storage/" + pathToFileOfUser)).map(p -> p.getFileName().toString()).forEach(o -> filesListOnServer.getItems().add(o));
+                Files.list(Paths.get("server_storage/" + pathToFileOfUser)).map(Path::toFile).map(File::length).forEach(o -> sizeListOnServer.getItems().add((o) + " bytes"));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -125,7 +128,7 @@ public class Controller implements Initializable {
 
     public void deleteOnServerButtonAction(ActionEvent actionEvent) throws IOException {
         filename = filesListOnServer.getSelectionModel().getSelectedItem();
-        if (filename != null && !filename.equals("")) fileService.deleteFile(filename, "server_storage/");
+        if (filename != null && !filename.equals("")) fileService.deleteFile(filename, "server_storage/" + pathToFileOfUser);
     }
 
     public void refreshOnAllButtonAction(ActionEvent actionEvent) {
@@ -135,7 +138,7 @@ public class Controller implements Initializable {
     public void sendAuth (ActionEvent actionEvent) throws IOException {
         String login = loginField.getText();
         String password = passField.getText();
-        nickname = login;
+        pathToFileOfUser = loginField.getText() + "/";
         AuthMessage msg = new AuthMessage();
         msg.login = login;
         msg.password = password;

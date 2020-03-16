@@ -1,11 +1,8 @@
 package Controller;
 
-import Handlers.*;
+import Handlers.AuthHandler;
+import Handlers.ProtocolHandler;
 import Protocol.*;
-import javafx.scene.control.Alert;
-import javafx.scene.control.TextArea;
-import javafx.scene.layout.VBox;
-// import org.apache.commons.lang3.exception.ExceptionUtils;
 import javax.swing.*;
 import java.io.*;
 import java.nio.file.Files;
@@ -32,7 +29,6 @@ class FileService {
     private void initialize() throws InterruptedException {
         readProperties();
         startConnectionToServer();
-        controller.refreshFilesList();
         Thread waitLogin = new Thread(this::autoChangeView);
         waitLogin.setDaemon(true);
         waitLogin.start();
@@ -111,6 +107,7 @@ class FileService {
                 controller.imageBox.setVisible(false);
                 controller.authPanel.setVisible(false);
                 controller.workPanel.setVisible(true);
+                controller.refreshFilesList();
                 System.out.println("Вход выполнен!");
                 break;
             } try {

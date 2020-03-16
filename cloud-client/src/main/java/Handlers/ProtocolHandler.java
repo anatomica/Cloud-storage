@@ -1,7 +1,6 @@
 package Handlers;
 
-import Controller.ScreenManager;
-import Protocol.*;
+import Controller.ProtocolFileSender;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.*;

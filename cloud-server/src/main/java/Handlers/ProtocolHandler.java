@@ -7,6 +7,7 @@ import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -80,7 +81,10 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
                         byte[] fileName = new byte[nextLength];
                         buf.readBytes(fileName);
                         System.out.println("STATE: Filename received - " + new String(fileName, "UTF-8"));
-                        out = new BufferedOutputStream(new FileOutputStream("server_storage/" + new String(fileName)));
+                        File nameFile = new File("server_storage/" + new String(fileName));
+                        nameFile.getParentFile().mkdirs();
+                        if (nameFile.createNewFile()) System.out.println("Создан новый файл!");
+                        out = new BufferedOutputStream(new FileOutputStream(nameFile, false));
                         currentState = State.FILE_LENGTH;
                     }
                 }
@@ -142,7 +146,6 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
             }
 
             if (currentState == State.END) {
-                // TODO refreshFilesList();
                 currentState = State.IDLE;
                 break;
             }
