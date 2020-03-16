@@ -94,7 +94,7 @@ public class Controller implements Initializable {
 
     private void showError (Exception e) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Упс! ЧТо-то пошло не так!");
+        alert.setTitle("Нет соединения с сервером!");
         alert.setHeaderText(e.getMessage());
         VBox dialogPaneContent = new VBox();
         Label label = new Label("Stack Trace:");

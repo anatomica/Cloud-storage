@@ -1,14 +1,9 @@
 package Handlers;
 
-import Controller.ScreenManager;
-import Protocol.*;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.*;
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+
+import javax.swing.*;
 
 public class AuthHandler extends ChannelInboundHandlerAdapter {
 
@@ -17,19 +12,29 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         ByteBuf buf = ((ByteBuf) msg);
-        byte readed = buf.readByte();
-
-        if (readed == (byte) 3) {
-            System.out.println("STATE: Verification is Successful!");
-            stateOfLogin = 1;
-            buf.release();
+        if (buf.readableBytes() > 3) {
+            ctx.fireChannelRead(buf);
+        } else {
+            byte data = buf.readByte();
+            if (data == 2) {
+                stateOfLogin = 2;
+                System.out.println("STATE: Verification is Not Successful!");
+                JOptionPane.showMessageDialog(null, "Вы ввели неверное имя пользователя или пароль!");
+            }
+            if (data == 3) {
+                // ScreenManager.showWorkFlowScreen();
+                stateOfLogin = 1;
+                System.out.println("STATE: Verification is Successful!");
+                buf.release();
+            }
         }
-        else ctx.fireChannelRead(buf);
     }
 
-    public static boolean checkLogin() {
-        if (stateOfLogin == 0) return false;
-        return stateOfLogin == 1;
+    public static String checkLogin() {
+        if (stateOfLogin == 0) return "0";
+        if (stateOfLogin == 1) return "1";
+        if (stateOfLogin == 2) return "2";
+        return "0";
     }
 
     @Override

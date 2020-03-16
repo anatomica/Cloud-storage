@@ -1,5 +1,6 @@
 package Controller;
 
+import Handlers.AuthHandler;
 import Handlers.ProtocolHandler;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -37,7 +38,7 @@ public class Network {
             clientBootstrap.remoteAddress(new InetSocketAddress("localhost", 8190));
             clientBootstrap.handler(new ChannelInitializer<SocketChannel>() {
                 protected void initChannel(SocketChannel socketChannel) throws Exception {
-                    socketChannel.pipeline().addLast(new ProtocolHandler());
+                    socketChannel.pipeline().addLast(new AuthHandler(), new ProtocolHandler());
                     currentChannel = socketChannel;
                 }
             });

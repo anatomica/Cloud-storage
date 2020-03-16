@@ -37,30 +37,30 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
         ByteBuf buf = ((ByteBuf) msg);
         while (buf.readableBytes() > 0) {
             if (currentState == State.IDLE) {
-                byte readed = buf.readByte();
-                if (readed == (byte) 5) {
-                    currentState = State.END;
-                    receivedFileLength = 0L;
-                    System.out.println("STATE: End of receiving file");
-                }
-                if (readed == (byte) 10) {
+                byte readByte = buf.readByte();
+                if (readByte == 5) {
                     receiveAuth = 1;
                     currentState = State.NAME_LENGTH;
                     receivedFileLength = 0L;
                     System.out.println("STATE: Authentication is started!");
                 }
-                if (readed == (byte) 15) {
+                if (readByte == 10) {
+                    currentState = State.END;
+                    receivedFileLength = 0L;
+                    System.out.println("STATE: End of receiving file");
+                }
+                if (readByte == 15) {
                     sendFileFromServer = 1;
                     currentState = State.NAME_LENGTH;
                     receivedFileLength = 0L;
                     System.out.println("STATE: Start file sending");
                 }
-                if (readed == (byte) 25) {
+                if (readByte == 25) {
                     currentState = State.NAME_LENGTH;
                     receivedFileLength = 0L;
                     System.out.println("STATE: Start file receiving");
-                } else if (readed != (byte) 5 && readed != (byte) 10 && readed != (byte) 15) {
-                    System.out.println("ERROR: Invalid first byte - " + readed);
+                } else if (readByte != 5 && readByte != 10 && readByte != 15) {
+                    System.out.println("ERROR: Invalid first byte - " + readByte);
                 }
             }
 
@@ -108,7 +108,7 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
                         if (future.isSuccess()) {
                             System.out.println("File send successful!");
                             ByteBuf end = ByteBufAllocator.DEFAULT.directBuffer(1);
-                            end.writeByte((byte) 5);
+                            end.writeByte((byte) 10);
                             ctx.channel().writeAndFlush(end);
                         }
                     });

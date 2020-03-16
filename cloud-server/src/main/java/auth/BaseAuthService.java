@@ -23,10 +23,15 @@ public class BaseAuthService implements AuthService {
             String password = authMessage.password;
             String nick = getNickByLoginPass(login, password);
             disconect();
-            if (nick == null) return false;
             ByteBuf auth = ByteBufAllocator.DEFAULT.directBuffer(1);
-            auth.writeByte((byte) 3);
-            channel.writeAndFlush(auth);
+            if (nick == null) {
+                auth.writeByte((byte) 2);
+                channel.writeAndFlush(auth);
+                return false;
+            } else {
+                auth.writeByte((byte) 3);
+                channel.writeAndFlush(auth);
+            }
         }
         return true;
     }

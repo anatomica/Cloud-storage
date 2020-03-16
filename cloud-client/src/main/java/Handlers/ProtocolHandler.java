@@ -19,13 +19,11 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
         FILE_LENGTH,
         FILE_RECEIVE,
         FILE_SEND,
-        AUTHID,
         END
     }
 
     private State currentState = State.IDLE;
     private int sendFileFromServer = 0;
-    private static int stateOfLogin = 0;
     private static int receiveFile = 0;
     private int nextLength;
     private long fileLength;
@@ -37,29 +35,24 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
         ByteBuf buf = ((ByteBuf) msg);
         while (buf.readableBytes() > 0) {
             if (currentState == State.IDLE) {
-                byte readed = buf.readByte();
-                if (readed == (byte) 3) {
-                    currentState = State.AUTHID;
-                    receivedFileLength = 0L;
-                    System.out.println("STATE: Verification is Successful!");
-                }
-                if (readed == (byte) 5) {
+                byte readByte = buf.readByte();
+                if (readByte == 10) {
                     currentState = State.END;
                     receivedFileLength = 0L;
                     System.out.println("STATE: End of receiving file");
                 }
-                if (readed == (byte) 15) {
+                if (readByte == 15) {
                     sendFileFromServer = 1;
                     currentState = State.NAME_LENGTH;
                     receivedFileLength = 0L;
                     System.out.println("STATE: Start file sending");
                 }
-                if (readed == (byte) 25) {
+                if (readByte == 25) {
                     currentState = State.NAME_LENGTH;
                     receivedFileLength = 0L;
                     System.out.println("STATE: Start file receiving");
-                } else if (readed != (byte) 3 && readed != (byte) 5 && readed != (byte) 15) {
-                    System.out.println("ERROR: Invalid first byte - " + readed);
+                } else if (readByte != 10 && readByte != 15) {
+                    System.out.println("ERROR: Invalid first byte - " + readByte);
                 }
             }
 
@@ -106,7 +99,7 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
                         if (future.isSuccess()) {
                             System.out.println("File send successful!");
                             ByteBuf end = ByteBufAllocator.DEFAULT.directBuffer(1);
-                            end.writeByte((byte) 5);
+                            end.writeByte((byte) 10);
                             ctx.channel().writeAndFlush(end);
                         }
                     });
@@ -127,13 +120,6 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
                 }
             }
 
-            if (currentState == State.AUTHID) {
-                // ScreenManager.showWorkFlowScreen();
-                stateOfLogin = 1;
-                currentState = State.IDLE;
-                break;
-            }
-
             if (currentState == State.END) {
                 receiveFile = 1;
                 currentState = State.IDLE;
@@ -143,11 +129,6 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
         if (buf.readableBytes() == 0) {
             buf.release();
         }
-    }
-
-    public static boolean checkLogin() {
-        if (stateOfLogin == 0) return false;
-        return stateOfLogin == 1;
     }
 
     public static boolean checkReceiveFile() {

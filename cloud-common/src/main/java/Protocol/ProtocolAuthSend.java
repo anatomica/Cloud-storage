@@ -12,7 +12,7 @@ public class ProtocolAuthSend {
 
         ByteBuf buf = null;
         buf = ByteBufAllocator.DEFAULT.directBuffer(1);
-        buf.writeByte((byte) 10);
+        buf.writeByte((byte) 5);
         channel.writeAndFlush(buf);
 
         buf = ByteBufAllocator.DEFAULT.directBuffer(4);

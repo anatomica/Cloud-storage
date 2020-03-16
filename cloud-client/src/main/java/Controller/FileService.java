@@ -1,9 +1,12 @@
 package Controller;
 
-import Handlers.ProtocolHandler;
+import Handlers.*;
 import Protocol.*;
-import javafx.application.Platform;
-
+import javafx.scene.control.Alert;
+import javafx.scene.control.TextArea;
+import javafx.scene.layout.VBox;
+// import org.apache.commons.lang3.exception.ExceptionUtils;
+import javax.swing.*;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -104,18 +107,22 @@ class FileService {
 
     public void autoChangeView() {
         while (true) {
-            if (ProtocolHandler.checkLogin()) {
+            if (AuthHandler.checkLogin().equals("1")) {
                 controller.imageBox.setVisible(false);
                 controller.authPanel.setVisible(false);
                 controller.workPanel.setVisible(true);
                 System.out.println("Вход выполнен!");
                 break;
             } try {
-                TimeUnit.SECONDS.sleep(1);
+                TimeUnit.MILLISECONDS.sleep(500);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
+    }
+
+    private void showError () {
+        JOptionPane.showMessageDialog(null, "Вы ввели неверное имя пользователя или пароль!");
     }
 
     void close() throws IOException {
