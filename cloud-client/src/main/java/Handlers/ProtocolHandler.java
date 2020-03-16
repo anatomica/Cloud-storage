@@ -25,6 +25,8 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
 
     private State currentState = State.IDLE;
     private int sendFileFromServer = 0;
+    private static int stateOfLogin = 0;
+    private static int receiveFile = 0;
     private int nextLength;
     private long fileLength;
     private long receivedFileLength;
@@ -126,14 +128,14 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
             }
 
             if (currentState == State.AUTHID) {
-                ScreenManager.showWorkFlowScreen();
+                // ScreenManager.showWorkFlowScreen();
+                stateOfLogin = 1;
                 currentState = State.IDLE;
                 break;
             }
 
             if (currentState == State.END) {
-                ScreenManager.showWorkFlowScreen();
-                // TODO refreshFilesList();
+                receiveFile = 1;
                 currentState = State.IDLE;
                 break;
             }
@@ -141,6 +143,16 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
         if (buf.readableBytes() == 0) {
             buf.release();
         }
+    }
+
+    public static boolean checkLogin() {
+        if (stateOfLogin == 0) return false;
+        return stateOfLogin == 1;
+    }
+
+    public static boolean checkReceiveFile() {
+        if (receiveFile == 0) return false;
+        return receiveFile == 1;
     }
 
     @Override

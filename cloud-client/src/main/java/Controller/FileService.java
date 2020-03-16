@@ -1,6 +1,9 @@
 package Controller;
 
+import Handlers.ProtocolHandler;
 import Protocol.*;
+import javafx.application.Platform;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -27,6 +30,9 @@ class FileService {
         readProperties();
         startConnectionToServer();
         controller.refreshFilesList();
+        Thread waitLogin = new Thread(this::autoChangeView);
+        waitLogin.setDaemon(true);
+        waitLogin.start();
     }
 
     private void readProperties() {
@@ -55,8 +61,10 @@ class FileService {
             }
             if (future.isSuccess()) {
                 System.out.println("Команда на получение передана");
-                // TimeUnit.MILLISECONDS.sleep(1500);
-                // controller.refreshFilesList();
+                TimeUnit.MILLISECONDS.sleep(200);
+                Thread waitReceive = new Thread(this::refreshList);
+                waitReceive.setDaemon(true);
+                waitReceive.start();
             }
         });
     }
@@ -80,7 +88,34 @@ class FileService {
     }
 
     public void refreshList() {
-        controller.refreshFilesList();
+        while (true) {
+            if (ProtocolHandler.checkReceiveFile()) {
+                controller.refreshFilesList();
+                System.out.println("Обновлено!");
+                break;
+            }
+            try {
+                TimeUnit.MILLISECONDS.sleep(300);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void autoChangeView() {
+        while (true) {
+            if (ProtocolHandler.checkLogin()) {
+                controller.imageBox.setVisible(false);
+                controller.authPanel.setVisible(false);
+                controller.workPanel.setVisible(true);
+                System.out.println("Вход выполнен!");
+                break;
+            } try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     void close() throws IOException {
