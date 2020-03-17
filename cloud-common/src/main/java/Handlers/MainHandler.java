@@ -1,4 +1,4 @@
-package handlers;
+package Handlers;
 
 import File.*;
 import io.netty.channel.ChannelHandlerContext;
