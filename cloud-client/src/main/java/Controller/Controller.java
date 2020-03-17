@@ -1,8 +1,11 @@
 package Controller;
 
 import Json.*;
+import GuiHelper.*;
 import Protocol.ProtocolAuthSend;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -18,12 +21,19 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 public class Controller implements Initializable {
 
     private FileService fileService;
     public static String pathToFileOfUser;
     public String filename;
+
+    private static final Controller CONTROLLER = new Controller();
+
+    public static Controller getController() {
+        return CONTROLLER;
+    }
 
     @FXML
     public MenuItem closeButton;
@@ -60,16 +70,24 @@ public class Controller implements Initializable {
     @FXML
     public Button refreshOnServer;
 
-    private static final Controller CONTROLLER = new Controller();
+    @FXML
+    public TableView<FileAbout> localFilesTable;
+    @FXML
+    public TableView<FileAbout> cloudFilesTable;
 
-    public static Controller getController() {
-        return CONTROLLER;
-    }
+    public ObservableList<FileAbout> localFilesList;
+    public ObservableList<FileAbout> cloudFilesList;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         try {
             this.fileService = new FileService(this);
+            localFilesList = FXCollections.observableArrayList();
+            cloudFilesList = FXCollections.observableArrayList();
+            GuiHelper.prepareTableView(localFilesTable);
+            GuiHelper.prepareTableView(cloudFilesTable);
+            localFilesTable.setItems(localFilesList);
+            cloudFilesTable.setItems(cloudFilesList);
         } catch (Exception e) {
             showError(e);
         }
@@ -78,17 +96,16 @@ public class Controller implements Initializable {
     public void refreshFilesList() {
         Platform.runLater(() -> {
             try {
-                filesListOnClient.getItems().clear();
-                sizeListOnClient.getItems().clear();
-                filesListOnServer.getItems().clear();
-                sizeListOnServer.getItems().clear();
+                localFilesList.clear();
+                cloudFilesList.clear();
                 File directory = new File("server_storage/" + pathToFileOfUser);
                 if (!directory.exists()) directory.mkdir();
-                // Files.createDirectory(Paths.get("server_storage/" + nickname));
-                Files.list(Paths.get("client_storage")).map(p -> p.getFileName().toString()).forEach(o -> filesListOnClient.getItems().add(o));
-                Files.list(Paths.get("client_storage")).map(Path::toFile).map(File::length).forEach(o -> sizeListOnClient.getItems().add((o) + " bytes"));
-                Files.list(Paths.get("server_storage/" + pathToFileOfUser)).map(p -> p.getFileName().toString()).forEach(o -> filesListOnServer.getItems().add(o));
-                Files.list(Paths.get("server_storage/" + pathToFileOfUser)).map(Path::toFile).map(File::length).forEach(o -> sizeListOnServer.getItems().add((o) + " bytes"));
+                localFilesList.addAll(Files.list(Paths.get("client_storage")).map(Path::toFile).map(FileAbout::new).collect(Collectors.toList()));
+                cloudFilesList.addAll(Files.list(Paths.get("server_storage/" + pathToFileOfUser)).map(Path::toFile).map(FileAbout::new).collect(Collectors.toList()));
+//                Files.list(Paths.get("client_storage")).map(p -> p.getFileName().toString()).forEach(o -> filesListOnClient.getItems().add(o));
+//                Files.list(Paths.get("client_storage")).map(Path::toFile).map(File::length).forEach(o -> sizeListOnClient.getItems().add((o) + " bytes"));
+//                Files.list(Paths.get("server_storage/" + pathToFileOfUser)).map(p -> p.getFileName().toString()).forEach(o -> filesListOnServer.getItems().add(o));
+//                Files.list(Paths.get("server_storage/" + pathToFileOfUser)).map(Path::toFile).map(File::length).forEach(o -> sizeListOnServer.getItems().add((o) + " bytes"));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -112,22 +129,23 @@ public class Controller implements Initializable {
     }
 
     public void sendFromClientButtonAction(ActionEvent actionEvent) throws IOException {
-        filename = filesListOnClient.getSelectionModel().getSelectedItem();
+        filename = localFilesTable.getSelectionModel().getSelectedItem().getName();
+        // filename = filesListOnClient.getSelectionModel().getSelectedItem();
         if (filename != null && !filename.equals("")) fileService.sendFile(Paths.get("client_storage/" + filename));
     }
 
     public void sendFromServerButtonAction(ActionEvent actionEvent) throws IOException {
-        filename = filesListOnServer.getSelectionModel().getSelectedItem();
+        filename = cloudFilesTable.getSelectionModel().getSelectedItem().getName();
         if (filename != null && !filename.equals("")) fileService.receiveFile(filename);
     }
 
     public void deleteOnClientButtonAction(ActionEvent actionEvent) throws IOException {
-        filename = filesListOnClient.getSelectionModel().getSelectedItem();
+        filename = localFilesTable.getSelectionModel().getSelectedItem().getName();
         if (filename != null && !filename.equals("")) fileService.deleteFile(filename, "client_storage/");
     }
 
     public void deleteOnServerButtonAction(ActionEvent actionEvent) throws IOException {
-        filename = filesListOnServer.getSelectionModel().getSelectedItem();
+        filename = cloudFilesTable.getSelectionModel().getSelectedItem().getName();
         if (filename != null && !filename.equals("")) fileService.deleteFile(filename, "server_storage/" + pathToFileOfUser);
     }
 
@@ -144,6 +162,10 @@ public class Controller implements Initializable {
         msg.password = password;
         Message authMsg = Message.createAuth(msg);
         ProtocolAuthSend.authSend(authMsg.toJson(), Network.getInstance().getCurrentChannel());
+    }
+
+    public void Exit(ActionEvent actionEvent) {
+        shutdown();
     }
 
     public void shutdown() {

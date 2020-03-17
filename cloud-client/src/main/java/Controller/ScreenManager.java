@@ -22,7 +22,7 @@ public class ScreenManager {
                 stage.setTitle("Client Cloud Storage");
                 // stage.getIcons().add(new Image("/icon.png"));
                 FXMLLoader loader = new FXMLLoader();
-                loader.setLocation(ScreenManager.class.getResource("/login.fxml"));
+                loader.setLocation(ScreenManager.class.getResource("/scene.fxml"));
                 Parent root = loader.load();
                 Controller controller = loader.getController();
                 stage.setOnHidden(e -> controller.shutdown());
