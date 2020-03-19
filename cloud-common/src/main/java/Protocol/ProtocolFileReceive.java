@@ -16,7 +16,7 @@ public class ProtocolFileReceive {
         channel.writeAndFlush(buf);
 
         buf = ByteBufAllocator.DEFAULT.directBuffer(4);
-        buf.writeInt(path.getFileName().toString().length());
+        buf.writeInt(path.getFileName().toString().getBytes(StandardCharsets.UTF_8).length);
         channel.writeAndFlush(buf);
 
         byte[] filenameBytes = path.getFileName().toString().getBytes(StandardCharsets.UTF_8);

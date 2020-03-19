@@ -22,7 +22,7 @@ public class ProtocolRefreshFiles {
         channel.writeAndFlush(buf);
 
         buf = ByteBufAllocator.DEFAULT.directBuffer(4);
-        buf.writeInt(refreshGson.length());
+        buf.writeInt(refreshGson.getBytes(StandardCharsets.UTF_8).length);
         channel.writeAndFlush(buf);
 
         byte[] filenameBytes = refreshGson.getBytes(StandardCharsets.UTF_8);

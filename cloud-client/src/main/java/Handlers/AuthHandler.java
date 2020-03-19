@@ -2,10 +2,13 @@ package Handlers;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
+import org.apache.log4j.Logger;
+
 import javax.swing.*;
 
 public class AuthHandler extends ChannelInboundHandlerAdapter {
 
+    static Logger log = Logger.getLogger("AuthHandler");
     private static int stateOfLogin = 0;
 
     @Override
@@ -18,13 +21,13 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
             byte data = buf.readByte();
             if (data == (byte) 2) {
                 stateOfLogin = 2;
-                System.out.println("STATE: Verification is Not Successful!");
+                log.info("STATE: Verification is Not Successful!");
                 JOptionPane.showMessageDialog(null, "Вы ввели неверное имя пользователя или пароль!");
             }
             if (data == (byte) 3) {
                 // ScreenManager.showWorkFlowScreen();
                 stateOfLogin = 1;
-                System.out.println("STATE: Verification is Successful!");
+                log.info("STATE: Verification is Successful!");
                 buf.release();
                 ctx.pipeline().remove(this);
             }

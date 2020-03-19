@@ -105,12 +105,13 @@ class FileService {
 
     public void refreshList() {
         while (true) {
-            if (ProtocolHandler.checkReceiveFile()) {
-                controller.refreshFilesList();
-                System.out.println("Обновлено!");
-                break;
-            }
             try {
+                if (ProtocolHandler.checkReceiveFile()) {
+                    TimeUnit.MILLISECONDS.sleep(500);
+                    controller.refreshFilesList();
+                    System.out.println("Обновлено!");
+                    break;
+                }
                 TimeUnit.MILLISECONDS.sleep(300);
             } catch (InterruptedException e) {
                 e.printStackTrace();

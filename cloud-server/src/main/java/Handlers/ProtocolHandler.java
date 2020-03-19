@@ -8,11 +8,10 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -105,7 +104,7 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
                     if (sendFileFromServer == 0 && receiveAuth == 0 && nowRefresh == 0 && deleteFile == 0) {
                         byte[] fileName = new byte[nextLength];
                         buf.readBytes(fileName);
-                        System.out.println("STATE: Filename received - " + new String(fileName, "UTF-8"));
+                        System.out.println("STATE: Filename received - " + new String(fileName, StandardCharsets.UTF_8));
                         File nameFile = new File("server_storage/" + new String(fileName));
                         nameFile.getParentFile().mkdirs();
                         if (nameFile.createNewFile()) System.out.println("Создан новый файл!");
@@ -124,13 +123,13 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
             }
 
             if (currentState == State.FILE_SEND) {
+                currentState = State.IDLE;
                 sendFileFromServer = 0;
                 byte[] fileName = new byte[nextLength];
                 buf.readBytes(fileName);
-                System.out.println("STATE: Filename what will be send - " + new String(fileName, "UTF-8"));
+                System.out.println("STATE: Filename what will be send - " + new String(fileName, StandardCharsets.UTF_8));
                 if (Files.exists(Paths.get("server_storage/" + new String(fileName)))) {
                     ProtocolFileSender.sendFile(Paths.get("server_storage/" + new String(fileName)), ctx.channel(), future -> {
-                        currentState = State.IDLE;
                         if (!future.isSuccess()) {
                             future.cause().printStackTrace();
                         }
@@ -162,10 +161,10 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
                 nowRefresh = 0;
                 byte[] pathToFile = new byte[nextLength];
                 buf.readBytes(pathToFile);
-                System.out.println("STATE: Filename received - " + new String(pathToFile, "UTF-8"));
-                File directory = new File("server_storage/" + new String(pathToFile, "UTF-8"));
+                System.out.println("STATE: Filename received - " + new String(pathToFile, StandardCharsets.UTF_8));
+                File directory = new File("server_storage/" + new String(pathToFile, StandardCharsets.UTF_8));
                 if (!directory.exists()) directory.mkdir();
-                List<FileAbout> fileAbouts = Files.list(Paths.get("server_storage/" + new String(pathToFile))).map(Path::toFile).map(FileAbout::new).collect(Collectors.toList());
+                List<FileAbout> fileAbouts = Files.list(Paths.get("server_storage/" + new String(pathToFile, StandardCharsets.UTF_8))).map(Path::toFile).map(FileAbout::new).collect(Collectors.toList());
                 FilesListMessage flm = Message.createFilesList(fileAbouts, "");
                 ProtocolRefreshFiles.sendRefreshFile(flm.toJson(), ctx.channel());
                 currentState = State.IDLE;
@@ -176,8 +175,8 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
                 receiveAuth = 0;
                 byte[] fileName = new byte[nextLength];
                 buf.readBytes(fileName);
-                System.out.println("STATE: Authentication received - " + new String(fileName, "UTF-8"));
-                if (BaseAuthService.authentication(new String(fileName, "UTF-8"), ctx.channel())) {
+                System.out.println("STATE: Authentication received - " + new String(fileName, StandardCharsets.UTF_8));
+                if (BaseAuthService.authentication(new String(fileName, StandardCharsets.UTF_8), ctx.channel())) {
                     System.out.println("Authentication is successful!");
                 } else System.out.println("Access denied!");
                 currentState = State.IDLE;
@@ -188,7 +187,7 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
                 deleteFile = 0;
                 byte[] fileName = new byte[nextLength];
                 buf.readBytes(fileName);
-                System.out.println("STATE: Filename what will be delete - " + new String(fileName, "UTF-8"));
+                System.out.println("STATE: Filename what will be delete - " + new String(fileName, StandardCharsets.UTF_8));
                 if (Files.exists(Paths.get("server_storage/" + new String(fileName)))) {
                     Files.delete(Paths.get("server_storage/" + new String(fileName)).toAbsolutePath());
                 }

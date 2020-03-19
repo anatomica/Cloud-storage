@@ -15,7 +15,7 @@ public class ProtocolAuthSend {
         channel.writeAndFlush(buf);
 
         buf = ByteBufAllocator.DEFAULT.directBuffer(4);
-        buf.writeInt(msgGson.length());
+        buf.writeInt(msgGson.getBytes(StandardCharsets.UTF_8).length);
         channel.writeAndFlush(buf);
 
         byte[] filenameBytes = msgGson.getBytes(StandardCharsets.UTF_8);

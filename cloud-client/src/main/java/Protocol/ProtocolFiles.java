@@ -29,7 +29,7 @@ public class ProtocolFiles {
 
     private static void lines(Path path, Channel channel, ChannelFutureListener finishListener, ByteBuf buf) {
         buf = ByteBufAllocator.DEFAULT.directBuffer(4);
-        buf.writeInt((Controller.pathToFileOfUser + path.getFileName()).length());
+        buf.writeInt((Controller.pathToFileOfUser + path.getFileName()).getBytes(StandardCharsets.UTF_8).length);
         channel.writeAndFlush(buf);
 
         byte[] filenameBytes = (Controller.pathToFileOfUser + path.getFileName()).getBytes(StandardCharsets.UTF_8);

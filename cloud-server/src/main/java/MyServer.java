@@ -7,8 +7,10 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import org.apache.log4j.Logger;
 
 class MyServer {
+    static Logger logger = Logger.getLogger("MyServer");
 
     public void run() throws Exception {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
@@ -20,18 +22,18 @@ class MyServer {
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         public void initChannel(SocketChannel ch) throws Exception {
-                            System.out.println("Подключился новый клиент!");
+                            logger.info("Подключился новый клиент!");
                             ch.pipeline().addLast(new ProtocolHandler());
                         }
                     })
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
             ChannelFuture f = b.bind(8190).sync();
-            System.out.println("Сервер запущен!");
+            logger.info("Сервер запущен!");
             f.channel().closeFuture().sync();
         } finally {
             workerGroup.shutdownGracefully();
             bossGroup.shutdownGracefully();
-            System.out.println("Сервер завершил работу!");
+            logger.info("Сервер завершил работу!");
         }
     }
 }

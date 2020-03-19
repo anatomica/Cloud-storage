@@ -6,9 +6,9 @@ import Controller.*;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.*;
-import javax.swing.*;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -46,25 +46,25 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
                         currentState = State.NAME_LENGTH;
                         refreshFile = 1;
                         receivedFileLength = 0L;
-                        System.out.println("STATE: Start Refresh Files");
+                        AuthHandler.log.info("STATE: Start Refresh Files");
                     }
                     if (readByte == (byte) 10) {
                         currentState = State.END;
                         receivedFileLength = 0L;
-                        System.out.println("STATE: End of receiving file");
+                        AuthHandler.log.info("STATE: End of receiving file");
                     }
                     if (readByte == (byte) 15) {
                         currentState = State.NAME_LENGTH;
                         sendFileFromServer = 1;
                         receivedFileLength = 0L;
-                        System.out.println("STATE: Start file sending");
+                        AuthHandler.log.info("STATE: Start file sending");
                     }
                     if (readByte == (byte) 25) {
                         currentState = State.NAME_LENGTH;
                         receivedFileLength = 0L;
-                        System.out.println("STATE: Start file receiving");
+                        AuthHandler.log.info("STATE: Start file receiving");
                     } else if (readByte != (byte) 4 && readByte != (byte) 10 && readByte != (byte) 15) {
-                        System.out.println("ERROR: Invalid first byte - " + readByte);
+                        AuthHandler.log.info("ERROR: Invalid first byte - " + readByte);
                     }
                 }
             }
@@ -84,7 +84,7 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
                     if (sendFileFromServer == 0 && refreshFile == 0) {
                         byte[] fileName = new byte[nextLength];
                         buf.readBytes(fileName);
-                        System.out.println("STATE: Filename received - " + new String(fileName, "UTF-8"));
+                        System.out.println("STATE: Filename received - " + new String(fileName, StandardCharsets.UTF_8));
                         out = new BufferedOutputStream(new FileOutputStream("client_storage/" + new String(fileName)));
                         currentState = State.FILE_LENGTH;
                     }
@@ -103,7 +103,7 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
                 sendFileFromServer = 0;
                 byte[] fileName = new byte[nextLength];
                 buf.readBytes(fileName);
-                System.out.println("STATE: Filename what will be send - " + new String(fileName, "UTF-8"));
+                System.out.println("STATE: Filename what will be send - " + new String(fileName, StandardCharsets.UTF_8));
                 if (Files.exists(Paths.get("server_storage/" + new String(fileName)))) {
                     ProtocolFileSender.sendFile(Paths.get("server_storage/" + new String(fileName)), ctx.channel(), future -> {
                         currentState = State.IDLE;
@@ -138,8 +138,8 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
                 refreshFile = 0;
                 byte[] fileName = new byte[nextLength];
                 buf.readBytes(fileName);
-                System.out.println("STATE: Authentication received - " + new String(fileName));
-                FilesListMessage flm = FilesListMessage.fromJson(new String(fileName));
+                System.out.println("STATE: Refresh string - " + new String(fileName, StandardCharsets.UTF_8));
+                FilesListMessage flm = FilesListMessage.fromJson(new String(fileName, StandardCharsets.UTF_8));
                 Controller.cloudFilesList.addAll(flm.files);
                 currentState = State.IDLE;
                 break;
