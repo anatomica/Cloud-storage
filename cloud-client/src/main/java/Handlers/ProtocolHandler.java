@@ -46,7 +46,7 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
                         currentState = State.NAME_LENGTH;
                         refreshFile = 1;
                         receivedFileLength = 0L;
-                        System.out.println("STATE: End of receiving file");
+                        System.out.println("STATE: Start Refresh Files");
                     }
                     if (readByte == (byte) 10) {
                         currentState = State.END;

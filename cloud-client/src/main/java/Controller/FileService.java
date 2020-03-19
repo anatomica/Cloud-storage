@@ -2,7 +2,7 @@ package Controller;
 
 import Handlers.*;
 import Protocol.*;
-import javax.swing.*;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -51,7 +51,7 @@ class FileService {
     }
 
     void receiveFile(String filename) throws IOException {
-        ProtocolFileReceive.receiveFile(Paths.get(filename), Network.getInstance().getCurrentChannel(), future -> {
+        ProtocolFiles.receiveFile(Paths.get(filename), Network.getInstance().getCurrentChannel(), future -> {
             if (!future.isSuccess()) {
                 future.cause().printStackTrace();
             }
@@ -78,9 +78,24 @@ class FileService {
         });
     }
 
-    public void deleteFile(String filename, String storage) throws IOException {
-        Files.delete(Paths.get(storage + filename).toAbsolutePath());
+    public void deleteLocalFiles(String filename) throws IOException {
+        Files.delete(Paths.get("client_storage/" + filename).toAbsolutePath());
         controller.refreshFilesList();
+    }
+
+    public void deleteCloudFiles(String filename) {
+        ProtocolFiles.deleteFile(Paths.get(filename), Network.getInstance().getCurrentChannel(), future -> {
+            if (!future.isSuccess()) {
+                future.cause().printStackTrace();
+            }
+            if (future.isSuccess()) {
+                System.out.println("Команда на удаление передана!");
+                TimeUnit.MILLISECONDS.sleep(200);
+                Thread waitReceive = new Thread(this::refreshList);
+                waitReceive.setDaemon(true);
+                waitReceive.start();
+            }
+        });
     }
 
     public void refreshList() {

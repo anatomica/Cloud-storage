@@ -90,7 +90,7 @@ public class Controller implements Initializable {
                 localFilesList.clear();
                 cloudFilesList.clear();
                 localFilesList.addAll(Files.list(Paths.get("client_storage")).map(Path::toFile).map(FileAbout::new).collect(Collectors.toList()));
-                ProtocolRefreshFiles.refreshFile("server_storage/" + pathToFileOfUser, Network.getInstance().getCurrentChannel());
+                ProtocolRefreshFiles.refreshFile(pathToFileOfUser, Network.getInstance().getCurrentChannel());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -125,12 +125,12 @@ public class Controller implements Initializable {
 
     public void deleteOnClientButtonAction(ActionEvent actionEvent) throws IOException {
         filename = localFilesTable.getSelectionModel().getSelectedItem().getName();
-        if (filename != null && !filename.equals("")) fileService.deleteFile(filename, "client_storage/");
+        if (filename != null && !filename.equals("")) fileService.deleteLocalFiles(filename);
     }
 
     public void deleteOnServerButtonAction(ActionEvent actionEvent) throws IOException {
         filename = cloudFilesTable.getSelectionModel().getSelectedItem().getName();
-        if (filename != null && !filename.equals("")) fileService.deleteFile(filename, "server_storage/" + pathToFileOfUser);
+        if (filename != null && !filename.equals("")) fileService.deleteCloudFiles(filename);
     }
 
     public void refreshOnAllButtonAction(ActionEvent actionEvent) {

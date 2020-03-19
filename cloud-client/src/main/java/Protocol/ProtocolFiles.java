@@ -9,15 +9,25 @@ import io.netty.channel.ChannelFutureListener;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
-public class ProtocolFileReceive {
+public class ProtocolFiles {
 
     public static void receiveFile(Path path, Channel channel, ChannelFutureListener finishListener) {
-
-        ByteBuf buf = null;
+        ByteBuf buf;
         buf = ByteBufAllocator.DEFAULT.directBuffer(1);
         buf.writeByte((byte) 15);
         channel.writeAndFlush(buf);
+        lines(path, channel, finishListener, buf);
+    }
 
+    public static void deleteFile(Path path, Channel channel, ChannelFutureListener finishListener) {
+        ByteBuf buf;
+        buf = ByteBufAllocator.DEFAULT.directBuffer(1);
+        buf.writeByte((byte) 7);
+        channel.writeAndFlush(buf);
+        lines(path, channel, finishListener, buf);
+    }
+
+    private static void lines(Path path, Channel channel, ChannelFutureListener finishListener, ByteBuf buf) {
         buf = ByteBufAllocator.DEFAULT.directBuffer(4);
         buf.writeInt((Controller.pathToFileOfUser + path.getFileName()).length());
         channel.writeAndFlush(buf);
