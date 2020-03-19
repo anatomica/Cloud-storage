@@ -1,16 +1,23 @@
 package Handlers;
 
+import File.*;
+import Json.*;
 import Protocol.*;
 import auth.BaseAuthService;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class ProtocolHandler extends ChannelInboundHandlerAdapter {
 
@@ -21,6 +28,7 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
         FILE_LENGTH,
         FILE_RECEIVE,
         FILE_SEND,
+        REFRESH,
         AUTH,
         END
     }
@@ -28,6 +36,7 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
     private State currentState = State.IDLE;
     private int sendFileFromServer = 0;
     private int receiveAuth = 0;
+    private int nowRefresh = 0;
     private int nextLength;
     private long fileLength;
     private long receivedFileLength;
@@ -35,32 +44,38 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        if (msg == null) return;
         ByteBuf buf = ((ByteBuf) msg);
-        while (buf.readableBytes() > 0) {
+        while (buf.readableBytes() > (byte) 0) {
             if (currentState == State.IDLE) {
                 byte readByte = buf.readByte();
-                if (readByte == 5) {
+                if (readByte == (byte) 4) {
+                    nowRefresh = 1;
+                    currentState = State.NAME_LENGTH;
+                    receivedFileLength = 0L;
+                }
+                if (readByte == (byte) 5) {
                     receiveAuth = 1;
                     currentState = State.NAME_LENGTH;
                     receivedFileLength = 0L;
                     System.out.println("STATE: Authentication is started!");
                 }
-                if (readByte == 10) {
+                if (readByte == (byte) 10) {
                     currentState = State.END;
                     receivedFileLength = 0L;
                     System.out.println("STATE: End of receiving file");
                 }
-                if (readByte == 15) {
+                if (readByte == (byte) 15) {
                     sendFileFromServer = 1;
                     currentState = State.NAME_LENGTH;
                     receivedFileLength = 0L;
                     System.out.println("STATE: Start file sending");
                 }
-                if (readByte == 25) {
+                if (readByte == (byte) 25) {
                     currentState = State.NAME_LENGTH;
                     receivedFileLength = 0L;
                     System.out.println("STATE: Start file receiving");
-                } else if (readByte != 5 && readByte != 10 && readByte != 15) {
+                } else if (readByte != (byte) 4 && readByte != (byte) 5 && readByte != (byte) 10 && readByte != (byte) 15) {
                     System.out.println("ERROR: Invalid first byte - " + readByte);
                 }
             }
@@ -75,9 +90,10 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
 
             if (currentState == State.NAME) {
                 if (buf.readableBytes() >= nextLength) {
+                    if (nowRefresh == 1) currentState = State.REFRESH;
                     if (receiveAuth == 1) currentState = State.AUTH;
                     if (sendFileFromServer == 1) currentState = State.FILE_SEND;
-                    if (sendFileFromServer == 0 && receiveAuth == 0) {
+                    if (sendFileFromServer == 0 && receiveAuth == 0 && nowRefresh == 0) {
                         byte[] fileName = new byte[nextLength];
                         buf.readBytes(fileName);
                         System.out.println("STATE: Filename received - " + new String(fileName, "UTF-8"));
@@ -130,6 +146,22 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
                         out.close();
                         break;
                     }
+                }
+            }
+
+            if (currentState == State.REFRESH) {
+                if (buf.readableBytes() >= nextLength) {
+                    byte[] pathToFile = new byte[nextLength];
+                    buf.readBytes(pathToFile);
+                    System.out.println("STATE: Filename received - " + new String(pathToFile, "UTF-8"));
+                    File directory = new File(new String(pathToFile, "UTF-8"));
+                    if (!directory.exists()) directory.mkdir();
+                    List<FileAbout> fileAbouts = Files.list(Paths.get(new String(pathToFile))).map(Path::toFile).map(FileAbout::new).collect(Collectors.toList());
+                    FilesListMessage flm = Message.createFilesList(fileAbouts, "");
+                    ProtocolRefreshFiles.sendRefreshFile(flm.toJson(), ctx.channel());
+                    nowRefresh = 0;
+                    currentState = State.IDLE;
+                    break;
                 }
             }
 

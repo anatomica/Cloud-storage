@@ -2,7 +2,6 @@ package Handlers;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
-
 import javax.swing.*;
 
 public class AuthHandler extends ChannelInboundHandlerAdapter {
@@ -11,21 +10,23 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        if (msg == null) return;
         ByteBuf buf = ((ByteBuf) msg);
-        if (buf.readableBytes() > 3) {
+        if (buf.readableBytes() > (byte) 3) {
             ctx.fireChannelRead(buf);
         } else {
             byte data = buf.readByte();
-            if (data == 2) {
+            if (data == (byte) 2) {
                 stateOfLogin = 2;
                 System.out.println("STATE: Verification is Not Successful!");
                 JOptionPane.showMessageDialog(null, "Вы ввели неверное имя пользователя или пароль!");
             }
-            if (data == 3) {
+            if (data == (byte) 3) {
                 // ScreenManager.showWorkFlowScreen();
                 stateOfLogin = 1;
                 System.out.println("STATE: Verification is Successful!");
                 buf.release();
+                ctx.pipeline().remove(this);
             }
         }
     }

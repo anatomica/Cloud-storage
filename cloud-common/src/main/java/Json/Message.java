@@ -1,10 +1,12 @@
 package Json;
 
+import File.FileAbout;
 import com.google.gson.Gson;
 import java.util.List;
 
 public class Message {
 
+    public FilesListMessage filesListMessage;
     public AuthMessage authMessage;
     public SendFile sendFile;
     public Command command;
@@ -17,6 +19,14 @@ public class Message {
         Message m = new Message();
         m.command = cmd;
         return m;
+    }
+
+    public static FilesListMessage createFilesList(List<FileAbout> files, String from) {
+        Message m = create(Command.FILES_LIST);
+        FilesListMessage msg = new FilesListMessage();
+        msg.files = files;
+        msg.from = from;
+        return msg;
     }
 
     public static Message sendFile(SendFile msg) {

@@ -1,8 +1,9 @@
 package Controller;
 
 import Json.*;
+import File.*;
 import GuiHelper.*;
-import Protocol.ProtocolAuthSend;
+import Protocol.*;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -14,7 +15,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -49,15 +49,6 @@ public class Controller implements Initializable {
     public BorderPane workPanel;
 
     @FXML
-    public ListView<String> filesListOnClient;
-    @FXML
-    public ListView<String> sizeListOnClient;
-    @FXML
-    public ListView<String> filesListOnServer;
-    @FXML
-    public ListView<String> sizeListOnServer;
-
-    @FXML
     public Button sendButtonFromClient;
     @FXML
     public Button sendButtonFromServer;
@@ -75,8 +66,8 @@ public class Controller implements Initializable {
     @FXML
     public TableView<FileAbout> cloudFilesTable;
 
-    public ObservableList<FileAbout> localFilesList;
-    public ObservableList<FileAbout> cloudFilesList;
+    public static ObservableList<FileAbout> localFilesList;
+    public static ObservableList<FileAbout> cloudFilesList;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -98,14 +89,8 @@ public class Controller implements Initializable {
             try {
                 localFilesList.clear();
                 cloudFilesList.clear();
-                File directory = new File("server_storage/" + pathToFileOfUser);
-                if (!directory.exists()) directory.mkdir();
                 localFilesList.addAll(Files.list(Paths.get("client_storage")).map(Path::toFile).map(FileAbout::new).collect(Collectors.toList()));
-                cloudFilesList.addAll(Files.list(Paths.get("server_storage/" + pathToFileOfUser)).map(Path::toFile).map(FileAbout::new).collect(Collectors.toList()));
-//                Files.list(Paths.get("client_storage")).map(p -> p.getFileName().toString()).forEach(o -> filesListOnClient.getItems().add(o));
-//                Files.list(Paths.get("client_storage")).map(Path::toFile).map(File::length).forEach(o -> sizeListOnClient.getItems().add((o) + " bytes"));
-//                Files.list(Paths.get("server_storage/" + pathToFileOfUser)).map(p -> p.getFileName().toString()).forEach(o -> filesListOnServer.getItems().add(o));
-//                Files.list(Paths.get("server_storage/" + pathToFileOfUser)).map(Path::toFile).map(File::length).forEach(o -> sizeListOnServer.getItems().add((o) + " bytes"));
+                ProtocolRefreshFiles.refreshFile("server_storage/" + pathToFileOfUser, Network.getInstance().getCurrentChannel());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -130,7 +115,6 @@ public class Controller implements Initializable {
 
     public void sendFromClientButtonAction(ActionEvent actionEvent) throws IOException {
         filename = localFilesTable.getSelectionModel().getSelectedItem().getName();
-        // filename = filesListOnClient.getSelectionModel().getSelectedItem();
         if (filename != null && !filename.equals("")) fileService.sendFile(Paths.get("client_storage/" + filename));
     }
 

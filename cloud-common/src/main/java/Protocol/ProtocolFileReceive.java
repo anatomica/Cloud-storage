@@ -3,15 +3,14 @@ package Protocol;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.*;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
 public class ProtocolFileReceive {
 
-    public static void receiveFile(Path path, Channel channel, ChannelFutureListener finishListener) throws IOException {
+    public static void receiveFile(Path path, Channel channel, ChannelFutureListener finishListener) {
 
-        ByteBuf buf = null;
+        ByteBuf buf;
         buf = ByteBufAllocator.DEFAULT.directBuffer(1);
         buf.writeByte((byte) 15);
         channel.writeAndFlush(buf);

@@ -5,20 +5,27 @@ import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.Channel;
 import java.nio.charset.StandardCharsets;
 
-public class ProtocolAuthSend {
+public class ProtocolRefreshFiles {
 
-    public static void authSend(String msgGson, Channel channel) {
+    public static void refreshFile(String pathToFiles, Channel channel) {
+        refresh(pathToFiles, channel);
+    }
 
+    public static void sendRefreshFile(String refreshGson, Channel channel) {
+        refresh(refreshGson, channel);
+    }
+
+    private static void refresh(String refreshGson, Channel channel) {
         ByteBuf buf;
         buf = ByteBufAllocator.DEFAULT.directBuffer(1);
-        buf.writeByte((byte) 5);
+        buf.writeByte((byte) 4);
         channel.writeAndFlush(buf);
 
         buf = ByteBufAllocator.DEFAULT.directBuffer(4);
-        buf.writeInt(msgGson.length());
+        buf.writeInt(refreshGson.length());
         channel.writeAndFlush(buf);
 
-        byte[] filenameBytes = msgGson.getBytes(StandardCharsets.UTF_8);
+        byte[] filenameBytes = refreshGson.getBytes(StandardCharsets.UTF_8);
         buf = ByteBufAllocator.DEFAULT.directBuffer(filenameBytes.length);
         buf.writeBytes(filenameBytes);
         channel.writeAndFlush(buf);

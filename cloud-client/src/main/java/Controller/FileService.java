@@ -1,7 +1,6 @@
 package Controller;
 
-import Handlers.AuthHandler;
-import Handlers.ProtocolHandler;
+import Handlers.*;
 import Protocol.*;
 import javax.swing.*;
 import java.io.*;
@@ -16,8 +15,6 @@ class FileService {
 
     private static final String HOST_ADDRESS_PROP = "server.address";
     private static final String HOST_PORT_PROP = "server.port";
-    private String hostAddress;
-    private int hostPort;
 
     private Controller controller;
 
@@ -38,8 +35,8 @@ class FileService {
         Properties serverProperties = new Properties();
         try (InputStream inputStream = getClass().getResourceAsStream("/application.properties")) {
             serverProperties.load(inputStream);
-            hostAddress = serverProperties.getProperty(HOST_ADDRESS_PROP);
-            hostPort = Integer.parseInt(serverProperties.getProperty(HOST_PORT_PROP));
+            serverProperties.getProperty(HOST_ADDRESS_PROP);
+            Integer.parseInt(serverProperties.getProperty(HOST_PORT_PROP));
         } catch (IOException e) {
             throw new RuntimeException("Failed to read application.properties file", e);
         } catch (NumberFormatException e) {
@@ -103,23 +100,21 @@ class FileService {
 
     public void autoChangeView() {
         while (true) {
-            if (AuthHandler.checkLogin().equals("1")) {
-                controller.imageBox.setVisible(false);
-                controller.authPanel.setVisible(false);
-                controller.workPanel.setVisible(true);
-                controller.refreshFilesList();
-                System.out.println("Вход выполнен!");
-                break;
-            } try {
-                TimeUnit.MILLISECONDS.sleep(500);
+            try {
+                if (AuthHandler.checkLogin().equals("1")) {
+                    controller.imageBox.setVisible(false);
+                    controller.authPanel.setVisible(false);
+                    controller.workPanel.setVisible(true);
+                    TimeUnit.MILLISECONDS.sleep(100);
+                    controller.refreshFilesList();
+                    System.out.println("Вход выполнен!");
+                    break;
+                }
+                TimeUnit.MILLISECONDS.sleep(300);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
-    }
-
-    private void showError () {
-        JOptionPane.showMessageDialog(null, "Вы ввели неверное имя пользователя или пароль!");
     }
 
     void close() throws IOException {

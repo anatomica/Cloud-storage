@@ -1,5 +1,6 @@
 package GuiHelper;
 
+import File.*;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
