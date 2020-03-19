@@ -104,16 +104,16 @@
                <children>
                   <HBox>
                      <children>
-                        <Button fx:id="sendButtonFromClient" mnemonicParsing="false" onAction="#sendFromClientButtonAction" prefHeight="25.0" prefWidth="100.0" text="Отправить" />
-                        <Button fx:id="deleteOnClient" mnemonicParsing="false" onAction="#deleteOnClientButtonAction" prefHeight="25.0" prefWidth="100.0" text="Удалить" />
-                        <Button fx:id="refreshOnClient" mnemonicParsing="false" onAction="#refreshOnAllButtonAction" prefHeight="25.0" prefWidth="100.0" text="Обновить" />
+                         <Button fx:id="sendButtonFromClient" mnemonicParsing="false" onAction="#sendFromClientButtonAction" prefHeight="25.0" prefWidth="100.0" text="Отправить" />
+                         <Button fx:id="renameOnClient" mnemonicParsing="false" onAction="#renameOnClientButtonAction" prefHeight="25.0" prefWidth="120.0" text="Переименовать" />
+                         <Button fx:id="deleteOnClient" mnemonicParsing="false" onAction="#deleteOnClientButtonAction" prefHeight="25.0" prefWidth="80.0" text="Удалить" />
                      </children>
                   </HBox>
                   <HBox>
                      <children>
-                        <Button fx:id="sendButtonFromServer" mnemonicParsing="false" onAction="#sendFromServerButtonAction" prefHeight="25.0" prefWidth="100.0" text="Скачать" />
-                        <Button fx:id="deleteOnServer" mnemonicParsing="false" onAction="#deleteOnServerButtonAction" prefHeight="25.0" prefWidth="100.0" text="Удалить" />
-                        <Button fx:id="refreshOnServer" mnemonicParsing="false" onAction="#refreshOnAllButtonAction" prefHeight="25.0" prefWidth="100.0" text="Обновить" />
+                         <Button fx:id="sendButtonFromServer" mnemonicParsing="false" onAction="#sendFromServerButtonAction" prefHeight="25.0" prefWidth="100.0" text="Скачать" />
+                         <Button fx:id="refreshOnServer" mnemonicParsing="false" onAction="#refreshOnAllButtonAction" prefHeight="25.0" prefWidth="120.0" text="Обновить" />
+                         <Button fx:id="deleteOnServer" mnemonicParsing="false" onAction="#deleteOnServerButtonAction" prefHeight="25.0" prefWidth="80.0" text="Удалить" />
                      </children>
                   </HBox>
                </children>

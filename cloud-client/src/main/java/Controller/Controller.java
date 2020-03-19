@@ -15,6 +15,8 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+
+import javax.swing.*;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -57,7 +59,7 @@ public class Controller implements Initializable {
     @FXML
     public Button deleteOnServer;
     @FXML
-    public Button refreshOnClient;
+    public Button renameOnClient;
     @FXML
     public Button refreshOnServer;
 
@@ -131,6 +133,12 @@ public class Controller implements Initializable {
     public void deleteOnServerButtonAction(ActionEvent actionEvent) throws IOException {
         filename = cloudFilesTable.getSelectionModel().getSelectedItem().getName();
         if (filename != null && !filename.equals("")) fileService.deleteCloudFiles(filename);
+    }
+
+    public void renameOnClientButtonAction(ActionEvent actionEvent) throws IOException {
+        filename = localFilesTable.getSelectionModel().getSelectedItem().getName();
+        String result = JOptionPane.showInputDialog("Введите новое имя файла:");
+        if (filename != null && !filename.equals("") && result != null && !result.equals("")) fileService.renameFiles(filename, result);
     }
 
     public void refreshOnAllButtonAction(ActionEvent actionEvent) {

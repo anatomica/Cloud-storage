@@ -98,6 +98,11 @@ class FileService {
         });
     }
 
+    public void renameFiles(String oldFilename, String newFileName) throws IOException {
+        Files.move(Paths.get("client_storage/" + oldFilename).toAbsolutePath(), Paths.get("client_storage/" + newFileName).toAbsolutePath());
+        controller.refreshFilesList();
+    }
+
     public void refreshList() {
         while (true) {
             if (ProtocolHandler.checkReceiveFile()) {
