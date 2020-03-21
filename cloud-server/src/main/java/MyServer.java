@@ -1,56 +1,44 @@
-import auth.AuthService;
-import auth.BaseAuthService;
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
+import handlers.*;
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.serialization.ClassResolvers;
+import io.netty.handler.codec.serialization.ObjectDecoder;
+import io.netty.handler.codec.serialization.ObjectEncoder;
 
 class MyServer {
 
-    private static final int PORT = 8190;
-    private final AuthService authService = new BaseAuthService();
-    private List<ClientHandler> clients = new ArrayList<>();
-    private ServerSocket serverSocket = null;
-
-    MyServer() {
-        System.out.println("Сервер запущен!");
+    public void run() throws Exception {
+        // Пул потоков для обработки подключений клиентов
+        EventLoopGroup mainGroup = new NioEventLoopGroup();
+        // Пул потоков для обработки сетевых сообщений
+        EventLoopGroup workerGroup = new NioEventLoopGroup();
         try {
-            serverSocket = new ServerSocket(PORT);
-            authService.start();
-            while (true) {
-                System.out.println("Ожидание подключения клиентов ...");
-                Socket socket = serverSocket.accept();
-                System.out.println("Клиент подключен!");
-                new ClientHandler(socket, this);
-            }
-        } catch (IOException e) {
-            System.err.println("Ошибка в работе сервера. Причина: " + e.getMessage());
-            e.printStackTrace();
+            // Создание настроек сервера
+            ServerBootstrap b = new ServerBootstrap();
+            b.group(mainGroup, workerGroup) // указание пулов потоков для работы сервера
+                    .channel(NioServerSocketChannel.class) // указание канала для подключения новых клиентов
+                    .childHandler(new ChannelInitializer<SocketChannel>() {
+                        protected void initChannel(SocketChannel socketChannel) throws Exception { // настройка конвеера для каждого подключившегося клиента
+                            System.out.println("Подключился новый клиент!");
+                            socketChannel.pipeline().addLast(
+                                    new ObjectDecoder(50 * 1024 * 1024, ClassResolvers.cacheDisabled(null)),
+                                    new ObjectEncoder(),
+                                    new MainHandler()
+                            );
+                        }
+                    });
+            ChannelFuture future = b.bind(8190).sync(); // запуск прослушивания порта 8189 для подключения клиентов
+            System.out.println("Сервер запущен!");
+            future.channel().closeFuture().sync(); // ожидание завершения работы сервера
         } finally {
-            shutdownServer();
+            mainGroup.shutdownGracefully(); // закрытие пула
+            workerGroup.shutdownGracefully(); // закрытие пула
+            System.out.println("Сервер завершил работу!");
         }
     }
-
-    private void shutdownServer() {
-        try {
-            authService.stop();
-            serverSocket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    synchronized void subscribe(ClientHandler clientHandler) {
-        clients.add(clientHandler);
-    }
-
-    synchronized void unsubscribe(ClientHandler clientHandler) {
-        clients.remove(clientHandler);
-    }
-
-    AuthService getAuthService() {
-        return authService;
-    }
-
 }

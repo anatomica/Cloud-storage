@@ -5,17 +5,15 @@
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
-<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
-
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0"
-            xmlns="http://javafx.com/javafx/8.0.221" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.Controller">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.221" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.Controller">
    <top>
-      <MenuBar BorderPane.alignment="CENTER">
+      <MenuBar prefHeight="16.0" prefWidth="600.0" BorderPane.alignment="CENTER">
         <menus>
           <Menu mnemonicParsing="false" text="File">
             <items>
@@ -38,13 +36,28 @@
    <left>
       <VBox prefHeight="375.0" prefWidth="295.0" BorderPane.alignment="CENTER">
          <children>
-            <TextField />
-            <ListView prefHeight="310.0" prefWidth="270.0" />
-            <HBox>
+            <TextField alignment="CENTER" editable="false" focusTraversable="false" text="Локальное хранилище">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font></TextField>
+            <HBox prefHeight="16.0" prefWidth="295.0">
                <children>
-                  <Button mnemonicParsing="false" prefHeight="25.0" prefWidth="100.0" text="Not" />
-                  <Button mnemonicParsing="false" prefHeight="25.0" prefWidth="100.0" text="Not" />
-                  <Button fx:id="sendButton" mnemonicParsing="false" onAction="#sendButtonAction" prefHeight="25.0" prefWidth="100.0" text="Send File" />
+                  <TextField alignment="CENTER" editable="false" focusTraversable="false" prefHeight="28.0" prefWidth="222.0" style="-fx-background-color: #f8f8ff" text="Имя файла">
+                     <font>
+                        <Font name="System Bold" size="11.0" />
+                     </font>
+                  </TextField>
+                  <TextField alignment="CENTER" editable="false" focusTraversable="false" prefHeight="28.0" prefWidth="170.0" style="-fx-background-color: #f8f8ff" text="Размер">
+                     <font>
+                        <Font name="System Bold" size="11.0" />
+                     </font>
+                  </TextField>
+               </children>
+            </HBox>
+            <HBox prefHeight="325.0" prefWidth="295.0">
+               <children>
+                  <ListView fx:id="filesListOnClient" prefHeight="290.0" prefWidth="306.0" />
+                  <ListView fx:id="sizeListOnClient" prefHeight="132.0" prefWidth="253.0" />
                </children>
             </HBox>
          </children>
@@ -53,12 +66,51 @@
    <right>
       <VBox prefHeight="375.0" prefWidth="295.0" BorderPane.alignment="CENTER">
          <children>
-            <TextField />
-            <ListView prefHeight="310.0" prefWidth="300.0" />
+            <TextField alignment="CENTER" editable="false" focusTraversable="false" text="Облачное хранилище">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font></TextField>
+            <HBox prefHeight="16.0" prefWidth="295.0">
+               <children>
+                  <TextField alignment="CENTER" editable="false" focusTraversable="false" prefHeight="28.0" prefWidth="222.0" style="-fx-background-color: #f8f8ff" text="Имя файла">
+                     <font>
+                        <Font name="System Bold" size="11.0" />
+                     </font>
+                  </TextField>
+                  <TextField alignment="CENTER" editable="false" focusTraversable="false" prefHeight="28.0" prefWidth="170.0" style="-fx-background-color: #f8f8ff" text="Размер">
+                     <font>
+                        <Font name="System Bold" size="11.0" />
+                     </font>
+                  </TextField>
+               </children>
+            </HBox>
+            <HBox prefHeight="325.0" prefWidth="295.0">
+               <children>
+                  <ListView fx:id="filesListOnServer" prefHeight="290.0" prefWidth="306.0" />
+                  <ListView fx:id="sizeListOnServer" prefHeight="132.0" prefWidth="253.0" />
+               </children>
+            </HBox>
          </children>
       </VBox>
    </right>
-   <center>
-      <Separator orientation="VERTICAL" prefHeight="200.0" BorderPane.alignment="CENTER" />
-   </center>
+   <bottom>
+      <HBox prefHeight="16.0" prefWidth="600.0" BorderPane.alignment="CENTER">
+         <children>
+            <HBox>
+               <children>
+                  <Button fx:id="sendButtonFromClient" mnemonicParsing="false" onAction="#sendFromClientButtonAction" prefHeight="25.0" prefWidth="100.0" text="Отправить" />
+                  <Button fx:id="deleteOnClient" mnemonicParsing="false" onAction="#deleteOnClientButtonAction" prefHeight="25.0" prefWidth="100.0" text="Удалить" />
+                  <Button fx:id="refreshOnClient" mnemonicParsing="false" onAction="#refreshOnAllButtonAction" prefHeight="25.0" prefWidth="100.0" text="Обновить" />
+               </children>
+            </HBox>
+            <HBox>
+               <children>
+                  <Button fx:id="sendButtonFromServer" mnemonicParsing="false" onAction="#sendFromServerButtonAction" prefHeight="25.0" prefWidth="100.0" text="Скачать" />
+                  <Button fx:id="deleteOnServer" mnemonicParsing="false" onAction="#deleteOnServerButtonAction" prefHeight="25.0" prefWidth="100.0" text="Удалить" />
+                  <Button fx:id="refreshOnServer" mnemonicParsing="false" onAction="#refreshOnAllButtonAction" prefHeight="25.0" prefWidth="100.0" text="Обновить" />
+               </children>
+            </HBox>
+         </children>
+      </HBox>
+   </bottom>
 </BorderPane>

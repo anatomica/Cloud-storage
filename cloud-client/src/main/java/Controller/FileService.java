@@ -1,8 +1,12 @@
 package Controller;
 
-import Json.*;
+import File.*;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 class FileService {
 
@@ -22,6 +26,7 @@ class FileService {
     private void initialize() {
         readProperties();
         startConnectionToServer();
+        controller.refreshFilesList();
     }
 
     private void readProperties() {
@@ -39,27 +44,25 @@ class FileService {
 
     private void startConnectionToServer() {
         try {
-            this.network = new Network(hostAddress, hostPort, this);
+            this.network = new Network(hostAddress, hostPort, controller,this);
         } catch (IOException e) {
             throw new ServerConnectionException("Failed to connect to server", e);
         }
     }
 
-    void sendFile(File file) {
-        Message msg = buildMessage(file);
-        network.send(msg.toJson());
-        network.send(file);
+    void receiveFile(String filename) {
+        network.sendMsg(new FileRequest(filename));
     }
 
-    private Message buildMessage(File file) {
-        SendFile msg = new SendFile();
-        msg.nameFile = file.getName();
-        msg.pathFile = file.getPath();
-        msg.sizeFile = file.length();
-        return Message.sendFile(msg);
+    void sendFile(Path path) throws IOException, InterruptedException {
+        network.sendMsg(new FileMessage(path));
+        TimeUnit.SECONDS.sleep(1);
+        controller.refreshFilesList();
     }
 
-    void processRetrievedFile(String message) throws IOException {
+    public void deleteFile(String filename, String storage) throws IOException {
+        Files.delete(Paths.get(storage + filename).toAbsolutePath());
+        controller.refreshFilesList();
     }
 
     void close() throws IOException {
