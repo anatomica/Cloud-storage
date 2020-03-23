@@ -35,7 +35,7 @@ public class Network {
             Bootstrap clientBootstrap = new Bootstrap();
             clientBootstrap.group(group);
             clientBootstrap.channel(NioSocketChannel.class);
-            clientBootstrap.remoteAddress(new InetSocketAddress("localhost", 8190));
+            clientBootstrap.remoteAddress(new InetSocketAddress(FileService.hostAddress, FileService.hostPort));
             clientBootstrap.handler(new ChannelInitializer<SocketChannel>() {
                 protected void initChannel(SocketChannel socketChannel) throws Exception {
                     socketChannel.pipeline().addLast(new AuthHandler(), new ProtocolHandler());
@@ -46,6 +46,7 @@ public class Network {
             countDownLatch.countDown();
             channelFuture.channel().closeFuture().sync();
         } catch (Exception e) {
+            countDownLatch.countDown();
             e.printStackTrace();
         } finally {
             try {

@@ -15,6 +15,8 @@ class FileService {
 
     private static final String HOST_ADDRESS_PROP = "server.address";
     private static final String HOST_PORT_PROP = "server.port";
+    public static String hostAddress;
+    public static int hostPort;
 
     private Controller controller;
 
@@ -25,7 +27,7 @@ class FileService {
 
     private void initialize() throws InterruptedException {
         readProperties();
-        startConnectionToServer();
+        // startConnectionToServer();
         Thread waitLogin = new Thread(this::autoChangeView);
         waitLogin.setDaemon(true);
         waitLogin.start();
@@ -35,8 +37,8 @@ class FileService {
         Properties serverProperties = new Properties();
         try (InputStream inputStream = getClass().getResourceAsStream("/application.properties")) {
             serverProperties.load(inputStream);
-            serverProperties.getProperty(HOST_ADDRESS_PROP);
-            Integer.parseInt(serverProperties.getProperty(HOST_PORT_PROP));
+            hostAddress = serverProperties.getProperty(HOST_ADDRESS_PROP);
+            hostPort = Integer.parseInt(serverProperties.getProperty(HOST_PORT_PROP));
         } catch (IOException e) {
             throw new RuntimeException("Failed to read application.properties file", e);
         } catch (NumberFormatException e) {
@@ -44,7 +46,7 @@ class FileService {
         }
     }
 
-    private void startConnectionToServer() throws InterruptedException {
+    public void startConnectionToServer() throws InterruptedException {
         CountDownLatch networkStarter = new CountDownLatch(1);
         new Thread(() -> Network.getInstance().start(networkStarter)).start();
         networkStarter.await();

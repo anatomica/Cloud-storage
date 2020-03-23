@@ -145,7 +145,8 @@ public class Controller implements Initializable {
         refreshFilesList();
     }
 
-    public void sendAuth (ActionEvent actionEvent) throws IOException {
+    public void sendAuth (ActionEvent actionEvent) throws IOException, InterruptedException {
+        fileService.startConnectionToServer();
         String login = loginField.getText();
         String password = passField.getText();
         pathToFileOfUser = loginField.getText() + "/";
