@@ -1,15 +1,19 @@
 package Handlers;
 
+import Controller.Callback;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
 import org.apache.log4j.Logger;
-
 import javax.swing.*;
 
 public class AuthHandler extends ChannelInboundHandlerAdapter {
 
     static Logger log = Logger.getLogger("AuthHandler");
-    private static int stateOfLogin = 0;
+    private Callback authOkCallback;
+
+    public AuthHandler(Callback authOkCallback) {
+        this.authOkCallback = authOkCallback;
+    }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -20,25 +24,17 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
         } else {
             byte data = buf.readByte();
             if (data == (byte) 2) {
-                stateOfLogin = 2;
                 log.info("STATE: Verification is Not Successful!");
                 JOptionPane.showMessageDialog(null, "Вы ввели неверное имя пользователя или пароль!");
             }
             if (data == (byte) 3) {
                 // ScreenManager.showWorkFlowScreen();
-                stateOfLogin = 1;
                 log.info("STATE: Verification is Successful!");
                 buf.release();
+                authOkCallback.authOkCallingBack();
                 ctx.pipeline().remove(this);
             }
         }
-    }
-
-    public static String checkLogin() {
-        if (stateOfLogin == 0) return "0";
-        if (stateOfLogin == 1) return "1";
-        if (stateOfLogin == 2) return "2";
-        return "0";
     }
 
     @Override

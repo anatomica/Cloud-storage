@@ -70,11 +70,12 @@ public class Controller implements Initializable {
 
     public static ObservableList<FileAbout> localFilesList;
     public static ObservableList<FileAbout> cloudFilesList;
+    private Callback authOkCallback;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         try {
-            this.fileService = new FileService(this);
+            this.fileService = new FileService(this, authOkCallback);
             localFilesList = FXCollections.observableArrayList();
             cloudFilesList = FXCollections.observableArrayList();
             GuiHelper.prepareTableView(localFilesTable);

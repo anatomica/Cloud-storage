@@ -2,7 +2,6 @@ package Controller;
 
 import Handlers.*;
 import Protocol.*;
-
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -19,18 +18,24 @@ class FileService {
     public static int hostPort;
 
     private Controller controller;
+    private Callback authOkCallback;
 
-    FileService(Controller controller) throws InterruptedException, IOException {
+    FileService(Controller controller, Callback authOkCallback) {
         this.controller = controller;
+        this.authOkCallback = authOkCallback;
         initialize();
     }
 
-    private void initialize() throws InterruptedException {
+    private void initialize() {
         readProperties();
-        // startConnectionToServer();
-        Thread waitLogin = new Thread(this::autoChangeView);
-        waitLogin.setDaemon(true);
-        waitLogin.start();
+        authOkCallback = () -> {
+            controller.imageBox.setVisible(false);
+            controller.authPanel.setVisible(false);
+            controller.workPanel.setVisible(true);
+            TimeUnit.MILLISECONDS.sleep(100);
+            controller.refreshFilesList();
+            System.out.println("Вход выполнен!");
+        };
     }
 
     private void readProperties() {
@@ -48,7 +53,7 @@ class FileService {
 
     public void startConnectionToServer() throws InterruptedException {
         CountDownLatch networkStarter = new CountDownLatch(1);
-        new Thread(() -> Network.getInstance().start(networkStarter)).start();
+        new Thread(() -> Network.getInstance().start(authOkCallback, networkStarter)).start();
         networkStarter.await();
     }
 
@@ -112,25 +117,6 @@ class FileService {
                     TimeUnit.MILLISECONDS.sleep(500);
                     controller.refreshFilesList();
                     System.out.println("Обновлено!");
-                    break;
-                }
-                TimeUnit.MILLISECONDS.sleep(300);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public void autoChangeView() {
-        while (true) {
-            try {
-                if (AuthHandler.checkLogin().equals("1")) {
-                    controller.imageBox.setVisible(false);
-                    controller.authPanel.setVisible(false);
-                    controller.workPanel.setVisible(true);
-                    TimeUnit.MILLISECONDS.sleep(100);
-                    controller.refreshFilesList();
-                    System.out.println("Вход выполнен!");
                     break;
                 }
                 TimeUnit.MILLISECONDS.sleep(300);
