@@ -3,7 +3,7 @@ package Handlers;
 import File.*;
 import Json.*;
 import Protocol.*;
-import auth.BaseAuthService;
+import Auth.BaseAuthService;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;

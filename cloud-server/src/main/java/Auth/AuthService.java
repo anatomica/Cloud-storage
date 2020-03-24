@@ -1,5 +1,4 @@
-package auth;
-import java.sql.SQLException;
+package Auth;
 
 public interface AuthService {
 

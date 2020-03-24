@@ -15,7 +15,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-
 import javax.swing.*;
 import java.io.IOException;
 import java.net.URL;
@@ -70,12 +69,11 @@ public class Controller implements Initializable {
 
     public static ObservableList<FileAbout> localFilesList;
     public static ObservableList<FileAbout> cloudFilesList;
-    private Callback authOkCallback;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         try {
-            this.fileService = new FileService(this, authOkCallback);
+            this.fileService = new FileService(this, null, null);
             localFilesList = FXCollections.observableArrayList();
             cloudFilesList = FXCollections.observableArrayList();
             GuiHelper.prepareTableView(localFilesTable);

@@ -1,4 +1,4 @@
-package auth;
+package Auth;
 
 import Json.*;
 import io.netty.buffer.ByteBuf;

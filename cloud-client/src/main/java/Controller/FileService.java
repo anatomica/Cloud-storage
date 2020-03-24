@@ -1,6 +1,5 @@
 package Controller;
 
-import Handlers.*;
 import Protocol.*;
 import java.io.*;
 import java.nio.file.Files;
@@ -19,10 +18,12 @@ class FileService {
 
     private Controller controller;
     private Callback authOkCallback;
+    private Callback refreshCallback;
 
-    FileService(Controller controller, Callback authOkCallback) {
+    FileService(Controller controller, Callback authOkCallback, Callback refreshCallback) {
         this.controller = controller;
         this.authOkCallback = authOkCallback;
+        this.refreshCallback = refreshCallback;
         initialize();
     }
 
@@ -35,6 +36,10 @@ class FileService {
             TimeUnit.MILLISECONDS.sleep(100);
             controller.refreshFilesList();
             System.out.println("Вход выполнен!");
+        };
+        refreshCallback = () -> {
+            controller.refreshFilesList();
+            System.out.println("Обновлено!");
         };
     }
 
@@ -53,7 +58,7 @@ class FileService {
 
     public void startConnectionToServer() throws InterruptedException {
         CountDownLatch networkStarter = new CountDownLatch(1);
-        new Thread(() -> Network.getInstance().start(authOkCallback, networkStarter)).start();
+        new Thread(() -> Network.getInstance().start(authOkCallback, refreshCallback, networkStarter)).start();
         networkStarter.await();
     }
 
@@ -64,10 +69,6 @@ class FileService {
             }
             if (future.isSuccess()) {
                 System.out.println("Команда на получение передана");
-                TimeUnit.MILLISECONDS.sleep(200);
-                Thread waitReceive = new Thread(this::refreshList);
-                waitReceive.setDaemon(true);
-                waitReceive.start();
             }
         });
     }
@@ -97,10 +98,8 @@ class FileService {
             }
             if (future.isSuccess()) {
                 System.out.println("Команда на удаление передана!");
-                TimeUnit.MILLISECONDS.sleep(200);
-                Thread waitReceive = new Thread(this::refreshList);
-                waitReceive.setDaemon(true);
-                waitReceive.start();
+                TimeUnit.MICROSECONDS.sleep(300);
+                refreshCallback.callBack();
             }
         });
     }
@@ -108,22 +107,6 @@ class FileService {
     public void renameFiles(String oldFilename, String newFileName) throws IOException {
         Files.move(Paths.get("client_storage/" + oldFilename).toAbsolutePath(), Paths.get("client_storage/" + newFileName).toAbsolutePath());
         controller.refreshFilesList();
-    }
-
-    public void refreshList() {
-        while (true) {
-            try {
-                if (ProtocolHandler.checkReceiveFile()) {
-                    TimeUnit.MILLISECONDS.sleep(500);
-                    controller.refreshFilesList();
-                    System.out.println("Обновлено!");
-                    break;
-                }
-                TimeUnit.MILLISECONDS.sleep(300);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
     }
 
     void close() throws IOException {

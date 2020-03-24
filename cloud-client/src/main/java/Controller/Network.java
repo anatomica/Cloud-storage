@@ -26,7 +26,7 @@ public class Network {
         return currentChannel;
     }
 
-    public void start(Callback authOkCallback, CountDownLatch countDownLatch) {
+    public void start(Callback authOkCallback, Callback refreshCallback, CountDownLatch countDownLatch) {
         EventLoopGroup group = new NioEventLoopGroup();
         try {
             Bootstrap clientBootstrap = new Bootstrap();
@@ -35,7 +35,7 @@ public class Network {
             clientBootstrap.remoteAddress(new InetSocketAddress(FileService.hostAddress, FileService.hostPort));
             clientBootstrap.handler(new ChannelInitializer<SocketChannel>() {
                 protected void initChannel(SocketChannel socketChannel) throws Exception {
-                    socketChannel.pipeline().addLast(new AuthHandler(authOkCallback), new ProtocolHandler());
+                    socketChannel.pipeline().addLast(new AuthHandler(authOkCallback), new ProtocolHandler(refreshCallback));
                     currentChannel = socketChannel;
                 }
             });

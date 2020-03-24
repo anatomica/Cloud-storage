@@ -3,13 +3,10 @@ package Protocol;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.Channel;
+
 import java.nio.charset.StandardCharsets;
 
 public class ProtocolRefreshFiles {
-
-    public static void refreshFile(String pathToFiles, Channel channel) {
-        refresh(pathToFiles, channel);
-    }
 
     public static void sendRefreshFile(String refreshGson, Channel channel) {
         refresh(refreshGson, channel);

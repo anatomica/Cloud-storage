@@ -31,7 +31,7 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
                 // ScreenManager.showWorkFlowScreen();
                 log.info("STATE: Verification is Successful!");
                 buf.release();
-                authOkCallback.authOkCallingBack();
+                authOkCallback.callBack();
                 ctx.pipeline().remove(this);
             }
         }

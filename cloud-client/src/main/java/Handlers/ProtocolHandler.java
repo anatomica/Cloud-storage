@@ -27,12 +27,16 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
 
     private State currentState = State.IDLE;
     private int sendFileFromServer = 0;
-    private static int receiveFile = 0;
     private int refreshFile = 0;
     private int nextLength;
     private long fileLength;
     private long receivedFileLength;
     private BufferedOutputStream out;
+    private Callback refreshCallback;
+
+    public ProtocolHandler(Callback refreshCallback) {
+        this.refreshCallback = refreshCallback;
+    }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -147,18 +151,13 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
 
             if (currentState == State.END) {
                 currentState = State.IDLE;
-                receiveFile = 1;
+                refreshCallback.callBack();
                 break;
             }
         }
         if (buf.readableBytes() == 0) {
             buf.release();
         }
-    }
-
-    public static boolean checkReceiveFile() {
-        if (receiveFile == 0) return false;
-        return receiveFile == 1;
     }
 
     @Override
