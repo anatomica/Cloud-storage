@@ -109,7 +109,7 @@ public class ProtocolHandler extends ChannelInboundHandlerAdapter {
                 buf.readBytes(fileName);
                 System.out.println("STATE: Filename what will be send - " + new String(fileName, StandardCharsets.UTF_8));
                 if (Files.exists(Paths.get("server_storage/" + new String(fileName)))) {
-                    ProtocolFileSender.sendFile(Paths.get("server_storage/" + new String(fileName)), ctx.channel(), future -> {
+                    ProtocolFiles.sendFile(Paths.get("server_storage/" + new String(fileName)), ctx.channel(), future -> {
                         currentState = State.IDLE;
                         if (!future.isSuccess()) {
                             future.cause().printStackTrace();

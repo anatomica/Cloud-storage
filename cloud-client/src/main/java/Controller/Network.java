@@ -44,7 +44,7 @@ public class Network {
             channelFuture.channel().closeFuture().sync();
         } catch (Exception e) {
             countDownLatch.countDown();
-            e.printStackTrace();
+            Controller.showError(e);
         } finally {
             try {
                 group.shutdownGracefully().sync();

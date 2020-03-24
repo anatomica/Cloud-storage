@@ -91,27 +91,29 @@ public class Controller implements Initializable {
                 localFilesList.clear();
                 cloudFilesList.clear();
                 localFilesList.addAll(Files.list(Paths.get("client_storage")).map(Path::toFile).map(FileAbout::new).collect(Collectors.toList()));
-                ProtocolRefreshFiles.refreshFile(pathToFileOfUser, Network.getInstance().getCurrentChannel());
+                ProtocolFiles.refreshFile(pathToFileOfUser, Network.getInstance().getCurrentChannel());
             } catch (IOException e) {
                 e.printStackTrace();
             }
         });
     }
 
-    private void showError (Exception e) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Нет соединения с сервером!");
-        alert.setHeaderText(e.getMessage());
-        VBox dialogPaneContent = new VBox();
-        Label label = new Label("Stack Trace:");
-        String stackTrace = ExceptionUtils.getStackTrace(e);
-        TextArea textArea = new TextArea();
-        textArea.setText(stackTrace);
-        dialogPaneContent.getChildren().addAll(label, textArea);
-        alert.getDialogPane().setContent(dialogPaneContent);
-        alert.setResizable(true);
-        alert.showAndWait();
-        e.printStackTrace();
+    public static void showError (Exception e) {
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Нет соединения с сервером!");
+            alert.setHeaderText(e.getMessage());
+            VBox dialogPaneContent = new VBox();
+            Label label = new Label("Stack Trace:");
+            String stackTrace = ExceptionUtils.getStackTrace(e);
+            TextArea textArea = new TextArea();
+            textArea.setText(stackTrace);
+            dialogPaneContent.getChildren().addAll(label, textArea);
+            alert.getDialogPane().setContent(dialogPaneContent);
+            alert.setResizable(true);
+            alert.showAndWait();
+            e.printStackTrace();
+        });
     }
 
     public void sendFromClientButtonAction(ActionEvent actionEvent) throws IOException {
@@ -144,7 +146,7 @@ public class Controller implements Initializable {
         refreshFilesList();
     }
 
-    public void sendAuth (ActionEvent actionEvent) throws IOException, InterruptedException {
+    public void sendAuth (ActionEvent actionEvent) throws InterruptedException {
         fileService.startConnectionToServer();
         String login = loginField.getText();
         String password = passField.getText();
@@ -153,7 +155,7 @@ public class Controller implements Initializable {
         msg.login = login;
         msg.password = password;
         Message authMsg = Message.createAuth(msg);
-        ProtocolAuthSend.authSend(authMsg.toJson(), Network.getInstance().getCurrentChannel());
+        ProtocolFiles.authSend(authMsg.toJson(), Network.getInstance().getCurrentChannel());
     }
 
     public void Exit(ActionEvent actionEvent) {

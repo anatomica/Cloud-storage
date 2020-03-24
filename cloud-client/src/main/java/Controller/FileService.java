@@ -74,7 +74,7 @@ class FileService {
     }
 
     void sendFile(Path path) throws IOException {
-        ProtocolFileSender.sendFile(Paths.get("client_storage/" + path.getFileName()), Network.getInstance().getCurrentChannel(), future -> {
+        ProtocolFiles.sendFile(Paths.get("client_storage/" + path.getFileName()), Network.getInstance().getCurrentChannel(), future -> {
             if (!future.isSuccess()) {
                 future.cause().printStackTrace();
             }
