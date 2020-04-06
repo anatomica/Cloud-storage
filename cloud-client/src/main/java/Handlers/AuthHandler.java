@@ -10,6 +10,7 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
 
     static Logger log = Logger.getLogger("AuthHandler");
     private Callback authOkCallback;
+    private int authOk = 0;
 
     public AuthHandler(Callback authOkCallback) {
         this.authOkCallback = authOkCallback;
@@ -19,7 +20,7 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg == null) return;
         ByteBuf buf = ((ByteBuf) msg);
-        if (buf.readableBytes() > (byte) 3) {
+        if ((buf.readableBytes() > (byte) 3) && authOk == 1) {
             ctx.fireChannelRead(buf);
         } else {
             byte data = buf.readByte();
@@ -31,6 +32,7 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
                 // ScreenManager.showWorkFlowScreen();
                 log.info("STATE: Verification is Successful!");
                 buf.release();
+                authOk = 1;
                 authOkCallback.callBack();
                 ctx.pipeline().remove(this);
             }
