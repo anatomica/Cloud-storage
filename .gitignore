@@ -1,0 +1,9 @@
+.gitignore
+/.idea/
+/pom.xml
+/cloud-client/pom.xml
+/cloud-common/pom.xml
+/cloud-server/pom.xml
+/logs/server-cloud.log
+/client_storage/
+/server_storage/
